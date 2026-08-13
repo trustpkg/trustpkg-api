@@ -2,6 +2,8 @@
 
 set -e
 
+source ./scripts/helpers/runLog.sh "Starting dropBinaries script"
+
 shopt -s nullglob
 filesInBinDir=(bin/*)
 shopt -u nullglob
@@ -18,4 +20,4 @@ for file in "${filesInBinDir[@]}"; do
   echo "file $filename removed from bin directory"
 done
 
-echo "all files removed from bin directory"
+source ./scripts/helpers/doneLog.sh "All files removed from bin directory"

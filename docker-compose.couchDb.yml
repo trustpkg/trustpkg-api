@@ -1,0 +1,11 @@
+services:
+  couchdb:
+    image: docker.io/library/couchdb:latest
+    restart: always
+    ports:
+      - 3200:5984
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+      TZ: UTC
+    
