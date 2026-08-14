@@ -2,39 +2,45 @@ package npm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 )
 
-func fetchNpmPackagesByCurrentSequence(ctx context.Context) error {
+func fetchNpmPackagesByCurrentSequence(ctx context.Context) (*NpmChangesResponse, error) {
 	client := &http.Client{}
 
-	sequence, err := selectLastSequence(ctx)
-	if err != nil {
-		return err
-	}
+	var sequence = 0
 
-	url := npmUrl + "_changes?since=" + strconv.Itoa(sequence) + "&limit=" + limit + "&include_docs=" + shouldIncludeDocs
+	sequenceFromDb, err := selectLastSequence(ctx)
+	if err != nil {
+		panic(err)
+	}
+	if sequenceFromDb != 0 {
+		sequence = sequenceFromDb
+	}
+	fmt.Println("current sequecne: ", sequence)
+
+	url := npmReplicationUrl + "?since=" + strconv.Itoa(sequence) + "&limit=" + limit
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	request.Header.Set("Accept-Encoding", "gzip")
 
 	response, err := client.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer response.Body.Close()
 
-	fmt.Println("response: ", response)
+	var packagesData NpmChangesResponse
 
-	if response.StatusCode == 200 {
-		insertLastSequence(ctx, sequence)
+	err = json.NewDecoder(response.Body).Decode(&packagesData)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return &packagesData, nil
 }

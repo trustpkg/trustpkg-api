@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS npm_replication_state (
-    id SMALLINT PRIMARY KEY DEFAULT 1,
-    last_seq BIGINT NOT NULL DEFAULT 0
-);

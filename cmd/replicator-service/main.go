@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/trustpkg/trustpkg-api/db"
 	"github.com/trustpkg/trustpkg-api/internal/npm"
 )
@@ -8,5 +10,8 @@ import (
 func main() {
 	db.ConnectDb()
 
-	npm.Pipeline()
+	err := npm.Pipeline()
+	if err != nil {
+		fmt.Println("commit error: ", err)
+	}
 }

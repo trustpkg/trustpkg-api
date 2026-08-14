@@ -1,1 +1,0 @@
-DROP TABLE IF EXISTS npm_replication_state;
