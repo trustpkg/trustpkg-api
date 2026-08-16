@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/trustpkg/trustpkg-api/db"
-	adaptiveWorker "github.com/trustpkg/trustpkg-api/internal/adaptive-worker"
 )
 
 func Pipeline() error {
@@ -50,15 +49,12 @@ func Pipeline() error {
 		}
 	}
 
-	fmt.Println("overrite Sequence: ", response.LastSeq)
+	fmt.Println("NPM overrite Sequence: ", response.LastSeq)
 
 	err = insertLastSequence(ctx, transaction, response.LastSeq)
 	if err != nil {
 		return err
 	}
-
-	data, _ := adaptiveWorker.CheckResourceUsage()
-	fmt.Println("data", data)
 
 	return transaction.Commit(ctx)
 }

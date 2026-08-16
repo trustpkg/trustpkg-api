@@ -1,15 +1,12 @@
 package adaptiveWorker
 
 const (
-	minWorkers       = 2
-	maxWorkersPerCpu = 16
+	defaultMinWorkers = 2
+	maxWorkersPerCpu  = 16
 
 	maxWorkerHeadroom = 0.2
 
-	maxCpuUsage    = 0.6
-	maxMemoryUsage = 0.8
-
-	timeFromRequestWorker = 30
+	cycleTime = "@every 30s"
 
 	skipCount = 2
 
@@ -22,4 +19,6 @@ const (
 	usageStateRegular   string = "regular"
 	usageStateGood      string = "good"
 	usageStateExcellent string = "excellent"
+
+	adaptiveWorkerRedisKey = "adaptive-worker"
 )

@@ -1,17 +1,32 @@
 package main
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/trustpkg/trustpkg-api/db"
+	adaptiveWorker "github.com/trustpkg/trustpkg-api/internal/adaptive-worker"
 	"github.com/trustpkg/trustpkg-api/internal/npm"
 )
 
 func main() {
-	db.ConnectDb()
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	err := npm.Pipeline()
-	if err != nil {
-		fmt.Println("commit error: ", err)
-	}
+	db.ConnectDb()
+	db.ConnectRedis(ctx)
+
+	worker, startWorker := adaptiveWorker.New(ctx)
+
+	worker.ScheduleJob(adaptiveWorker.Job{
+		Handler: func() {
+			npm.Pipeline()
+		},
+		SkippedCycles:    0,
+		ReservationRatio: 1,
+	})
+
+	startWorker()
+
+	<-ctx.Done()
 }

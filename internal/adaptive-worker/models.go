@@ -8,8 +8,16 @@ type resourcesUsage struct {
 	cpuCount    int
 }
 
-type calculedResourcesUsage struct {
+type calculatedResourcesUsage struct {
 	loadPercent float64
 	cpuPercent  float64
 	ramPercent  float64
+}
+
+type jobHandler func()
+
+type Job struct {
+	Handler          jobHandler
+	ReservationRatio float64
+	SkippedCycles    int
 }

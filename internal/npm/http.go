@@ -20,7 +20,8 @@ func fetchNpmPackagesByCurrentSequence(ctx context.Context) (*NpmChangesResponse
 	if sequenceFromDb != 0 {
 		sequence = sequenceFromDb
 	}
-	fmt.Println("current sequecne: ", sequence)
+
+	fmt.Println("NPM current sequecne: ", sequence)
 
 	url := npmReplicationUrl + "?since=" + strconv.Itoa(sequence) + "&limit=" + limit
 

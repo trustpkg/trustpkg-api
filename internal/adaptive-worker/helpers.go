@@ -60,7 +60,7 @@ func getPointsByUsage(value float64) int {
 	}
 }
 
-func getResourceUsageState(resources calculedResourcesUsage) string {
+func getResourceUsageState(resources calculatedResourcesUsage) string {
 	sum := getPointsByUsage(resources.cpuPercent) +
 		getPointsByUsage(resources.loadPercent) +
 		getPointsByUsage(resources.ramPercent)
@@ -79,4 +79,24 @@ func getResourceUsageState(resources calculedResourcesUsage) string {
 	default:
 		return usageStateBad
 	}
+}
+
+func inferMinSimultaneousWorkers(currentCycle int, jobs []job) int {
+	var minSimultaneousWorkers int
+
+	nextCycle := currentCycle + 1
+
+	for _, job := range jobs {
+		cycleInterval := job.scheduledJob.SkippedCycles + 1
+
+		if nextCycle%cycleInterval == 0 {
+			minSimultaneousWorkers++
+		}
+	}
+
+	if minSimultaneousWorkers < defaultMinWorkers {
+		minSimultaneousWorkers = defaultMinWorkers
+	}
+
+	return minSimultaneousWorkers
 }

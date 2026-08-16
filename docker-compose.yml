@@ -23,9 +23,32 @@ services:
       - db
     networks:
       - trustpkg-net
+
+  redis:
+    image: docker.io/library/redis:8.8.0
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --requirepass devpassword
+    volumes:
+      - redisData:/var/lib/redis/data
+    networks:
+      - trustpkg-net
+
+  redis-ui:
+    image: docker.io/rediscommander/redis-commander:latest
+    ports:
+      - "8082:8081"
+    environment:
+      REDIS_HOSTS: "local:redis:6379:0:devpassword:password"
+    depends_on:
+      - redis
+    networks:
+      - trustpkg-net
     
 volumes:
     data:
+    redisData:
   
 networks:
   trustpkg-net:
