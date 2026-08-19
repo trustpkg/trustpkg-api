@@ -8,8 +8,8 @@ API for tracking vulnerability occurrence frequencies.
 
 ```bash
 make init
-2. Install Go
 ```
+2. Install Go
 
 This step depends on your operating system.
 
@@ -50,4 +50,18 @@ go install github.com/air-verse/air@latest
 
 ```bash
 make replicator-service
+```
+
+4. pick up Postgres db
+
+- podman
+
+```bash
+podman compose up -d
+```
+
+ - or docker
+
+```bash
+docker compose up -d
 ```

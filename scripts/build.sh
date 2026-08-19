@@ -2,12 +2,14 @@
 
 set -eu
 
+source ./scripts/helpers/runLog.sh "Starting build script"
+
 if [ ! -d "bin" ]; then
   mkdir bin
 fi
 
 if [ ! -d "cmd" ]; then
-  echo "cmd directory is missing"
+  source ./scripts/helpers/errorLog.sh "cmd directory is missing"
   exit 1
 else
   for dir in cmd/*/; do
@@ -18,7 +20,9 @@ else
       go build -o "bin/$dirname" "$mainFile"
       echo "binary $dirname created in bin directory"
     else
-      echo "main file $mainFile not found, skipping"
+      source ./scripts/helpers/errorLog.sh "main file $mainFile not found, skipping"
     fi
   done
 fi
+
+source ./scripts/helpers/doneLog.sh "Build script completed successfully"
