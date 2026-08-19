@@ -28,8 +28,6 @@ func (controller *Controller) adjust(count int) {
 func (controller *Controller) calculateWorkers() error {
 	inferredMinWorkers := inferMinSimultaneousWorkers(controller.currentCycle, controller.jobs)
 
-	fmt.Println("infered min workers: ", inferredMinWorkers)
-
 	resourceUsage, err := CheckResourceUsage()
 	if err != nil {
 		controller.adjust(inferredMinWorkers)
@@ -47,8 +45,6 @@ func (controller *Controller) calculateWorkers() error {
 
 	maxSimultaneousWorkers := getMaxWorkers(resourceUsage.cpuCount)
 
-	fmt.Println("max workers: ", maxSimultaneousWorkers)
-
 	calculatedData := calculatedResourcesUsage{
 		loadPercent: resourceUsage.loadPercent,
 		cpuPercent:  resourceUsage.cpuPercent,
@@ -57,10 +53,6 @@ func (controller *Controller) calculateWorkers() error {
 
 	canIncrease := controller.simultaneousWorkers+skipCount <= maxSimultaneousWorkers
 
-	fmt.Println("------------------")
-	fmt.Println("canINcrease", canIncrease)
-	fmt.Println("------------------")
-
 	var simultaneousWorkers int
 	if controller.simultaneousWorkers < defaultMinWorkers {
 		simultaneousWorkers = inferredMinWorkers
@@ -68,18 +60,12 @@ func (controller *Controller) calculateWorkers() error {
 		simultaneousWorkers = controller.simultaneousWorkers
 	}
 
-	fmt.Println("current claudalted workrs: ", simultaneousWorkers)
+	fmt.Println("current simultaneous gorutines: ", simultaneousWorkers)
 
 	if getResourceUsageState(calculatedData) == usageStateExcellent || getResourceUsageState(calculatedData) == usageStateGood {
-		fmt.Println("state - execlen")
-
 		if canIncrease {
-			fmt.Println("state - execlen boudnary")
-
 			controller.adjust(simultaneousWorkers + skipCount)
 		} else {
-			fmt.Println("state - execlen stay on current workers")
-
 			controller.adjust(simultaneousWorkers)
 		}
 
@@ -87,16 +73,12 @@ func (controller *Controller) calculateWorkers() error {
 	}
 
 	if getResourceUsageState(calculatedData) == usageStateRegular {
-		fmt.Println("regular")
-
 		controller.adjust(simultaneousWorkers)
 
 		return nil
 	}
 
 	if getResourceUsageState(calculatedData) == usageStateBad {
-		fmt.Println("bad")
-
 		if simultaneousWorkers-skipCount >= inferredMinWorkers {
 			controller.adjust(simultaneousWorkers - skipCount)
 		} else {
@@ -119,12 +101,6 @@ func (controller *Controller) setCurrentCycle(cycle int) {
 }
 
 func (controller *Controller) runCycle() {
-	var waitGroup sync.WaitGroup
-
-	fmt.Println("jobs", controller.jobs)
-	fmt.Println("min simul workers", inferMinSimultaneousWorkers(controller.currentCycle, controller.jobs))
-	fmt.Println("workers num", controller.simultaneousWorkers)
-
 	for _, currentJob := range controller.jobs {
 		currentJob.calculateCycleConcurrency(
 			controller.simultaneousWorkers,
@@ -132,22 +108,8 @@ func (controller *Controller) runCycle() {
 			inferMinSimultaneousWorkers(controller.currentCycle, controller.jobs),
 		)
 
-		waitGroup.Add(currentJob.concurrency)
-
-		fmt.Println("concurrency num", currentJob.concurrency)
-
-		for index := 0; index < currentJob.concurrency; index++ {
-			go func(currentJob job) {
-				defer waitGroup.Done()
-
-				fmt.Println("check concurrency, index:", index)
-
-				currentJob.scheduledJob.Handler()
-			}(currentJob)
-		}
+		currentJob.scheduledJob.Handler(currentJob.concurrency)
 	}
-
-	waitGroup.Wait()
 }
 
 func (controller *Controller) ScheduleJob(options Job) {

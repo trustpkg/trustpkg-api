@@ -1,29 +1,15 @@
 package npm
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 )
 
-func fetchNpmPackagesByCurrentSequence(ctx context.Context) (*NpmChangesResponse, error) {
+func fetchNpmPackages(since int) (*NpmChangesResponse, error) {
 	client := &http.Client{}
 
-	var sequence = 0
-
-	sequenceFromDb, err := selectLastSequence(ctx)
-	if err != nil {
-		panic(err)
-	}
-	if sequenceFromDb != 0 {
-		sequence = sequenceFromDb
-	}
-
-	fmt.Println("NPM current sequecne: ", sequence)
-
-	url := npmReplicationUrl + "?since=" + strconv.Itoa(sequence) + "&limit=" + limit
+	url := npmReplicationUrl + "?since=" + strconv.Itoa(since) + "&limit=" + strconv.Itoa(limit)
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

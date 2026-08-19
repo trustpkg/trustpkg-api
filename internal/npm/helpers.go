@@ -7,7 +7,7 @@ func getUniquePackages(packages []npmChange) []npmChange {
 		unique[item.ID] = item
 	}
 
-	result := make([]npmChange, len(unique))
+	result := make([]npmChange, 0, len(unique))
 
 	for _, item := range unique {
 		result = append(result, item)

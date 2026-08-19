@@ -14,7 +14,7 @@ type calculatedResourcesUsage struct {
 	ramPercent  float64
 }
 
-type jobHandler func()
+type jobHandler func(concurrency int)
 
 type Job struct {
 	Handler          jobHandler
