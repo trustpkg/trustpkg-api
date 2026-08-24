@@ -6,7 +6,7 @@ const (
 
 	maxWorkerHeadroom = 0.2
 
-	cycleTime = "@every 30s"
+	cycleTime = "@every 1s"
 
 	skipCount = 2
 

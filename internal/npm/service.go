@@ -2,12 +2,16 @@ package npm
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
 	"sync"
 
 	"github.com/trustpkg/trustpkg-api/db"
+	adaptiveWorker "github.com/trustpkg/trustpkg-api/internal/adaptive-worker"
 )
 
-func Pipeline(concurrency int) error {
+func Pipeline(concurrency int, JobController *adaptiveWorker.JobController) error {
 	ctx := context.Background()
 
 	if concurrency < 1 {
@@ -39,11 +43,27 @@ func Pipeline(concurrency int) error {
 			if err := savePackagesPage(ctx, changes); err != nil {
 				errs <- err
 			}
+
+			fmt.Print("---------------------->\n")
+			enc := json.NewEncoder(os.Stdout)
+			enc.SetIndent("", "  ")
+			enc.Encode(response.Results)
+
+			fmt.Println("response", response.LastSeq)
+			fmt.Print("----------------------<\n")
 		}(response.Results)
 	}
 
 	waitGroup.Wait()
 	close(errs)
+
+	data, err := FetchNpmPackageDownloads(FetchNpmPackageDownloadsPayload{
+		packageName: "next",
+	})
+
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", " ")
+	enc.Encode(data)
 
 	for err := range errs {
 		if err != nil {

@@ -40,7 +40,7 @@ func (controller *Controller) calculateWorkers() error {
 	fmt.Println("cpu percent: ", resourceUsage.cpuPercent)
 	fmt.Println("loadAvg: ", resourceUsage.loadAvg)
 	fmt.Println("load percent: ", resourceUsage.loadPercent)
-	fmt.Println("rem percent: ", resourceUsage.ramPercent)
+	fmt.Println("ram percent: ", resourceUsage.ramPercent)
 	fmt.Println("resources usage - END-----------------------<")
 
 	maxSimultaneousWorkers := getMaxWorkers(resourceUsage.cpuCount)
@@ -108,7 +108,16 @@ func (controller *Controller) runCycle() {
 			inferMinSimultaneousWorkers(controller.currentCycle, controller.jobs),
 		)
 
-		currentJob.scheduledJob.Handler(currentJob.concurrency)
+		if currentJob.canRun {
+			currentJob.scheduledJob.Handler(currentJob.concurrency, &JobController{
+				AdjustReservationRatioHandler: func(reservationRatio float64) {
+					currentJob.scheduledJob.ReservationRatio = reservationRatio
+				},
+				AdjustSkippedCyclesHandler: func(skippedCycles int) {
+					currentJob.scheduledJob.SkippedCycles = skippedCycles
+				},
+			})
+		}
 	}
 }
 

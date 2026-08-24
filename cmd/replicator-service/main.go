@@ -19,11 +19,12 @@ func main() {
 	worker, startWorker := adaptiveWorker.New(ctx)
 
 	worker.ScheduleJob(adaptiveWorker.Job{
-		Handler: func(concurrency int) {
-			npm.Pipeline(concurrency)
+		Handler: func(concurrency int, controller *adaptiveWorker.JobController) {
+			npm.Pipeline(concurrency, controller)
+
 		},
-		SkippedCycles:    0,
-		ReservationRatio: 1,
+		SkippedCycles:    29,
+		ReservationRatio: 0,
 	})
 
 	startWorker()

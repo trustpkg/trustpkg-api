@@ -23,3 +23,15 @@ type dbDropPackagesBatchPayload struct {
 type dbInsertPackagesBatchPayload struct {
 	packages []string
 }
+
+type FetchNpmPackageDownloadsPayload struct {
+	packageName string
+	since       *string
+}
+
+type FetchNpmPackageDownloadsResponse struct {
+	Downloads int    `json:"downloads"`
+	End       string `json:"end"`
+	Package   string `json:"package"`
+	Start     string `json:"start"`
+}
