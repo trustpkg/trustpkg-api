@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"time"
 )
 
 func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*FetchPackageVulnerabilitiesResponse, error) {
@@ -52,4 +54,41 @@ func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*F
 	}
 
 	return &result, nil
+}
+
+func FetchOSVEcosystemDump(payload FetchOSVEcosystemDumpPayload) (io.ReadCloser, error) {
+	dumpURL := fmt.Sprintf(
+		"%s/%s/%s",
+		npmOsvDumpUrl,
+		payload.Ecosystem,
+		npmOsvDumpUrlSuffix,
+	)
+
+	request, err := http.NewRequest(http.MethodGet, dumpURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		response.Body.Close()
+
+		return nil, fmt.Errorf(
+			"OSV returned status %s",
+			response.Status,
+		)
+	}
+
+	progress := &progressReader{
+		reader:   response.Body,
+		total:    response.ContentLength,
+		start:    time.Now(),
+		reporter: newStatusReporter("OSV download", "MB", response.ContentLength, 1024*1024),
+		closer:   response.Body,
+	}
+	return progress, nil
 }

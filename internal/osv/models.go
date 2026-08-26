@@ -78,3 +78,7 @@ type OsvQueryPackage struct {
 type OsvQuery struct {
 	OsvPackage OsvQueryPackage `json:"package"`
 }
+
+type FetchOSVEcosystemDumpPayload struct {
+	Ecosystem string
+}

@@ -16,6 +16,10 @@ dropBin:
 replicator-service:
 	air -c configs/air/replicator-service.toml
 
+.PHONY: init-osv-replication
+init-osv-replication:
+	go run ./cmd/first-osv-init-service/main.go
+
 .PHONY: migrate-up
 migrate-up:
 	migrate -path migrations -database $(DB_URL) up
