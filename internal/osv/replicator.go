@@ -18,11 +18,13 @@ func ReplicateEcosystem(ctx context.Context, payload FetchOSVEcosystemDumpPayloa
 	if err != nil {
 		return fmt.Errorf("fetch OSV dump: %w", err)
 	}
+
 	archiveData, err := io.ReadAll(dump)
 	dump.Close()
 	if err != nil {
 		return fmt.Errorf("read OSV dump: %w", err)
 	}
+
 	archive, err := zip.NewReader(byteReaderAt(archiveData), int64(len(archiveData)))
 	if err != nil {
 		return fmt.Errorf("open OSV ZIP: %w", err)
@@ -30,16 +32,17 @@ func ReplicateEcosystem(ctx context.Context, payload FetchOSVEcosystemDumpPayloa
 
 	workerContext, cancel := context.WithCancel(ctx)
 	defer cancel()
+
 	processingReporter := newStatusReporter("OSV PostgreSQL", "records", int64(len(archive.File)), 1)
 	jobs := make(chan ParsedVulnerability, maxOSVWorkers)
+
 	var workers sync.WaitGroup
 	var saved atomic.Int64
 	var firstErr error
 	var errorOnce sync.Once
-	for worker := 0; worker < maxOSVWorkers; worker++ {
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
+
+	for range maxOSVWorkers {
+		workers.Go(func() {
 			for vulnerability := range jobs {
 				if err := saveVulnerability(workerContext, vulnerability); err != nil {
 					errorOnce.Do(func() {
@@ -50,8 +53,9 @@ func ReplicateEcosystem(ctx context.Context, payload FetchOSVEcosystemDumpPayloa
 					processingReporter.update(saved.Add(1))
 				}
 			}
-		}()
+		})
 	}
+
 fileLoop:
 	for _, file := range archive.File {
 		if workerContext.Err() != nil {
@@ -60,11 +64,13 @@ fileLoop:
 		if file.FileInfo().IsDir() || file.Name == "" || len(file.Name) < 5 || file.Name[len(file.Name)-5:] != ".json" {
 			continue
 		}
+
 		reader, openErr := file.Open()
 		if openErr != nil {
 			errorOnce.Do(func() { firstErr = openErr })
 			break
 		}
+
 		var raw OsvVuln
 		decodeErr := json.NewDecoder(reader).Decode(&raw)
 		reader.Close()
@@ -79,13 +85,17 @@ fileLoop:
 		}
 	}
 	close(jobs)
+
 	workers.Wait()
 	if firstErr != nil {
 		processingReporter.finish("OSV PostgreSQL stage failed")
 		return firstErr
 	}
+
 	processingReporter.finish("OSV PostgreSQL stage completed")
+
 	log.Printf("OSV replication completed: ecosystem=%s records=%d", payload.Ecosystem, saved.Load())
+
 	return ctx.Err()
 }
 

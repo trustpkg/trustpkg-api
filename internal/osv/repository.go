@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/trustpkg/trustpkg-api/db"
 )
 
@@ -17,6 +18,7 @@ const (
 	queryDeleteReferences    = "sql/delete_vulnerability_references.sql"
 	queryInsertAffected      = "sql/insert_affected.sql"
 	queryInsertReference     = "sql/insert_reference.sql"
+	queryDeletePackage       = "sql/delete_package_vulnerabilities.sql"
 )
 
 func saveVulnerability(ctx context.Context, vulnerability ParsedVulnerability) error {
@@ -26,8 +28,16 @@ func saveVulnerability(ctx context.Context, vulnerability ParsedVulnerability) e
 	}
 	defer transaction.Rollback(ctx)
 
+	if err := saveVulnerabilityTx(ctx, transaction, vulnerability); err != nil {
+		return err
+	}
+
+	return transaction.Commit(ctx)
+}
+
+func saveVulnerabilityTx(ctx context.Context, transaction pgx.Tx, vulnerability ParsedVulnerability) error {
 	var vulnerabilityID int64
-	err = transaction.QueryRow(ctx, readSQL(queryUpsertVulnerability),
+	err := transaction.QueryRow(ctx, readSQL(queryUpsertVulnerability),
 		vulnerability.OSVID, vulnerability.CVEID, vulnerability.Summary,
 		vulnerability.Description, vulnerability.Severity, vulnerability.CVSSScore,
 		vulnerability.CVSSVector, vulnerability.PublishedAt, vulnerability.ModifiedAt,
@@ -58,7 +68,17 @@ func saveVulnerability(ctx context.Context, vulnerability ParsedVulnerability) e
 		}
 	}
 
-	return transaction.Commit(ctx)
+	return nil
+}
+
+func deletePackageVulnerabilities(ctx context.Context, transaction pgx.Tx, name string, ecosystem *string) error {
+	effectiveEcosystem := defaultOsvEcosystem
+	if ecosystem != nil {
+		effectiveEcosystem = *ecosystem
+	}
+
+	_, err := transaction.Exec(ctx, readSQL(queryDeletePackage), name, effectiveEcosystem)
+	return err
 }
 
 func readSQL(name string) string {

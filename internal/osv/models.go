@@ -2,7 +2,12 @@ package osv
 
 import "time"
 
-type FetchPackageVulnerabilitiesPayload struct {
+type fetchPackageVulnerabilitiesPayload struct {
+	name      string
+	ecosystem *string
+}
+
+type SyncPackagePayload struct {
 	Name      string
 	Ecosystem *string
 }
@@ -66,8 +71,8 @@ type OsvSeverity struct {
 	Type  string `json:"type"`
 }
 
-type FetchPackageVulnerabilitiesResponse struct {
-	Vulns any `json:"vulns"`
+type fetchPackageVulnerabilitiesResponse struct {
+	Vulns []OsvVuln `json:"vulns"`
 }
 
 type OsvQueryPackage struct {

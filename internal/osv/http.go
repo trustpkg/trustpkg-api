@@ -2,6 +2,7 @@ package osv
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,10 +10,10 @@ import (
 	"time"
 )
 
-func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*FetchPackageVulnerabilitiesResponse, error) {
+func fetchPackageVulnerabilities(ctx context.Context, payload fetchPackageVulnerabilitiesPayload) (*fetchPackageVulnerabilitiesResponse, error) {
 	var ecosystem string
-	if payload.Ecosystem != nil {
-		ecosystem = *payload.Ecosystem
+	if payload.ecosystem != nil {
+		ecosystem = *payload.ecosystem
 	} else {
 		ecosystem = defaultOsvEcosystem
 	}
@@ -20,7 +21,7 @@ func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*F
 	url := osvPackageVulnerabilitiesUrl
 	requestPayload := OsvQuery{
 		OsvPackage: OsvQueryPackage{
-			Name:      payload.Name,
+			Name:      payload.name,
 			Ecosystem: ecosystem,
 		},
 	}
@@ -30,7 +31,7 @@ func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*F
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func FetchPackageVulnerabilities(payload FetchPackageVulnerabilitiesPayload) (*F
 		return nil, fmt.Errorf("OSV returned %s", resp.Status)
 	}
 
-	var result FetchPackageVulnerabilitiesResponse
+	var result fetchPackageVulnerabilitiesResponse
 
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
