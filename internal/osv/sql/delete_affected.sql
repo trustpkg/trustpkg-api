@@ -1,0 +1,2 @@
+DELETE FROM vulnerability_affected
+WHERE vulnerability_id = $1;

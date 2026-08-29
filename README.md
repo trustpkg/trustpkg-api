@@ -52,6 +52,33 @@ go install github.com/air-verse/air@latest
 make replicator-service
 ```
 
+
+## Replicator service
+
+The replicator service is the background process started from `cmd/replicator-service`. At startup it
+opens connections to PostgreSQL and Redis, then starts the adaptive worker. PostgreSQL is the main
+database for packages, vulnerabilities, replication cursors, and collected package data. Redis stores
+temporary and durable processing state, including worker cycles and queues of changes waiting to be
+processed.
+
+The service manages three background pipelines. The npm replication pipeline connects to the npm
+database change feed, reads new package changes, and saves its current replication position. The npm
+collector takes packages from the pending work queue, downloads the required package data from the npm
+registry, and writes the results to PostgreSQL. Keeping replication and package collection as separate
+jobs prevents a large upstream batch from blocking the rest of the service.
+
+The OSV pipeline connects to the OSV data service for vulnerability feeds. It imports the complete
+ecosystem dump when an ecosystem is initialized, then uses the incremental feed for later updates.
+Changed vulnerability IDs are placed in Redis and processed one record per callback before being stored
+in PostgreSQL. An item remains available when processing fails, so the next callback can retry it. A
+cooldown also prevents the service from repeatedly downloading a complete OSV dump.
+
+The adaptive worker checks scheduled jobs every second. Individual jobs can skip worker cycles when
+they should run less often, and the worker can delay new work when CPU, system load, or memory usage
+indicates pressure. Its cycle state is persisted in Redis, so scheduling can continue consistently
+after a restart. The service logs use timestamps and module prefixes such as `[WORKER]`,
+`[NPM COLLECTOR]`, `[NPM_REPLICATOR]`, and `[OSV Collector]` to make each pipeline easy to identify.
+
 4. pick up Postgres db
 
 - podman
@@ -64,4 +91,37 @@ podman compose up -d
 
 ```bash
 docker compose up -d
+```
+
+## OSV replication
+
+OSV data replication follows the [OSV data dump documentation](https://google.github.io/osv.dev/data/).
+The first synchronization for an ecosystem downloads its complete dump:
+
+```text
+https://storage.googleapis.com/osv-vulnerabilities/<ecosystem>/all.zip
+```
+
+After the first successful synchronization, the service checks the ecosystem feed every 10 minutes:
+
+```text
+https://storage.googleapis.com/osv-vulnerabilities/<ecosystem>/modified_id.csv
+```
+
+Only IDs listed after the stored `last_modified_at` cursor are downloaded as JSON records. A one-second
+cursor overlap prevents records with equal or near-identical timestamps from being skipped. Reprocessing
+the overlap is safe because vulnerability writes are idempotent.
+
+The synchronization state is stored in `osv_replication_state`, separately for every ecosystem. The first
+full import sets `is_first_synchronised` only after all records have been committed. Incremental IDs are
+stored in a Redis queue, and each worker callback processes one vulnerability at a time. This limits
+external requests and PostgreSQL work while keeping failed items available for retry.
+
+OSV records with a `withdrawn` timestamp are retained and marked with `vulnerabilities.withdrawn_at`.
+If an ID from `modified_id.csv` returns HTTP 404, an existing local record is marked as withdrawn as well.
+
+Apply migrations before starting the service:
+
+```bash
+make migrate-up
 ```
