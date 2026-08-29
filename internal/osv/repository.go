@@ -44,6 +44,12 @@ var (
 	queryUpdateIncrementalReplicationState string
 	//go:embed sql/update_withdrawn_vulnerability.sql
 	queryUpdateWithdrawnVulnerability string
+	//go:embed sql/select_vulnerability_history_id.sql
+	querySelectVulnerabilityHistoryID string
+	//go:embed sql/insert_vulnerability_history_affected.sql
+	queryInsertVulnerabilityHistoryAffected string
+	//go:embed sql/insert_withdrawn_vulnerability_history.sql
+	queryInsertWithdrawnVulnerabilityHistory string
 )
 
 func dbGetOsvReplicationState(ctx context.Context, ecosystem string) (*OsvReplicationState, error) {
@@ -84,7 +90,17 @@ func dbCompleteOsvIncrementalReplication(ctx context.Context, ecosystem string, 
 }
 
 func dbMarkVulnerabilityWithdrawn(ctx context.Context, transaction pgx.Tx, osvID string, withdrawnAt time.Time) error {
-	_, err := transaction.Exec(ctx, queryUpdateWithdrawnVulnerability, osvID, withdrawnAt)
+	var historyID int64
+	err := transaction.QueryRow(ctx, queryInsertWithdrawnVulnerabilityHistory, osvID, withdrawnAt).Scan(&historyID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		_, updateErr := transaction.Exec(ctx, queryUpdateWithdrawnVulnerability, osvID, withdrawnAt)
+		return updateErr
+	}
+	if err != nil {
+		return err
+	}
+
+	_, err = transaction.Exec(ctx, queryUpdateWithdrawnVulnerability, osvID, withdrawnAt)
 	return err
 }
 
@@ -112,6 +128,9 @@ func dbSaveVulnerabilityTx(ctx context.Context, transaction pgx.Tx, vulnerabilit
 	if err != nil {
 		return err
 	}
+	if err := dbInsertVulnerabilityHistory(ctx, transaction, vulnerabilityID, vulnerability); err != nil {
+		return err
+	}
 	if _, err = transaction.Exec(ctx, queryDeleteAffected, vulnerabilityID); err != nil {
 		return err
 	}
@@ -131,6 +150,59 @@ func dbSaveVulnerabilityTx(ctx context.Context, transaction pgx.Tx, vulnerabilit
 	}
 	for _, reference := range vulnerability.References {
 		if _, err = transaction.Exec(ctx, queryInsertReference, vulnerabilityID, reference); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func dbInsertVulnerabilityHistory(ctx context.Context, transaction pgx.Tx, vulnerabilityID int64, vulnerability ParsedVulnerability) error {
+	affected, err := json.Marshal(vulnerability.Affected)
+	if err != nil {
+		return err
+	}
+
+	sourceModifiedAt := time.Now().UTC()
+	if vulnerability.ModifiedAt != nil {
+		sourceModifiedAt = vulnerability.ModifiedAt.UTC()
+	}
+
+	var historyID int64
+	err = transaction.QueryRow(ctx, querySelectVulnerabilityHistoryID,
+		vulnerabilityID,
+		vulnerability.OSVID,
+		vulnerability.CVEID,
+		vulnerability.Summary,
+		vulnerability.Description,
+		vulnerability.Severity,
+		vulnerability.CVSSScore,
+		vulnerability.CVSSVector,
+		vulnerability.PublishedAt,
+		vulnerability.ModifiedAt,
+		vulnerability.WithdrawnAt,
+		sourceModifiedAt,
+		affected,
+	).Scan(&historyID)
+	if err != nil {
+		return err
+	}
+
+	for _, affectedPackage := range vulnerability.Affected {
+		var packageID int64
+		err = transaction.QueryRow(ctx, queryUpsertPackage, affectedPackage.PackageName, affectedPackage.Ecosystem).Scan(&packageID)
+		if err != nil {
+			return err
+		}
+		_, err = transaction.Exec(ctx, queryInsertVulnerabilityHistoryAffected,
+			historyID,
+			packageID,
+			affectedPackage.Ecosystem,
+			affectedPackage.IntroducedVersion,
+			affectedPackage.FixedVersion,
+			affectedPackage.LastAffectedVersion,
+		)
+		if err != nil {
 			return err
 		}
 	}

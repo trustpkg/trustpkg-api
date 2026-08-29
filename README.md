@@ -117,6 +117,17 @@ full import sets `is_first_synchronised` only after all records have been commit
 stored in a Redis queue, and each worker callback processes one vulnerability at a time. This limits
 external requests and PostgreSQL work while keeping failed items available for retry.
 
+Every imported OSV version is also stored in `vulnerability_history`, together with its affected package
+data in `vulnerability_history_affected`. These tables are append-only: changes to affected version
+ranges and withdrawn records remain available for historical monthly reports. The existing
+`vulnerabilities` and `vulnerability_affected` tables continue to contain the current read model.
+
+Run `make migrate-up` before starting the service to create the history tables. The first history
+migration records the current database state as a baseline; it cannot reconstruct versions that were
+overwritten before the migration was installed. Subsequent OSV updates are recorded in the same
+PostgreSQL transaction as the current-state update, so a failed update is retried from Redis without
+leaving a partial history record. Generating a report reads PostgreSQL only and does not call OSV or npm.
+
 OSV records with a `withdrawn` timestamp are retained and marked with `vulnerabilities.withdrawn_at`.
 If an ID from `modified_id.csv` returns HTTP 404, an existing local record is marked as withdrawn as well.
 

@@ -23,11 +23,11 @@ type ParsedVulnerability struct {
 }
 
 type AffectedPackage struct {
-	Ecosystem           string
-	PackageName         string
-	IntroducedVersion   *string
-	FixedVersion        *string
-	LastAffectedVersion *string
+	Ecosystem           string  `json:"ecosystem"`
+	PackageName         string  `json:"package_name"`
+	IntroducedVersion   *string `json:"introduced_version,omitempty"`
+	FixedVersion        *string `json:"fixed_version,omitempty"`
+	LastAffectedVersion *string `json:"last_affected_version,omitempty"`
 }
 
 func parseVulnerability(raw OsvVuln) ParsedVulnerability {
