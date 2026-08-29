@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/trustpkg/trustpkg-api/db"
 )
 
@@ -13,6 +14,9 @@ var (
 
 func getWorkerCycle(ctx context.Context) (int, error) {
 	if cycle, err := db.Redis.HGet(ctx, adaptiveWorkerRedisKey, "cycle").Int(); err != nil {
+		if err == redis.Nil {
+			return 0, nil
+		}
 		return 0, err
 	} else {
 		return cycle, nil

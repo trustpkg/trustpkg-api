@@ -19,24 +19,13 @@ func main() {
 	db.ConnectDb()
 	ctx := context.Background()
 
-	// if err := osv.ReplicateEcosystem(context.Background(), osv.FetchOSVEcosystemDumpPayload{
-	// 	Ecosystem: ecosystem,
-	// }); err != nil {
-	// 	log.Printf("OSV replication failed: %v", err)
+	if err := osv.ReplicateEcosystem(ctx, osv.FetchOSVEcosystemDumpPayload{
+		Ecosystem: ecosystem,
+	}); err != nil {
+		log.Printf("OSV replication failed: %v", err)
 
-	// 	os.Exit(1)
-	// } else {
-	// 	log.Println("OSV initialization process completed successfully.")
-	// }
-
-	err := osv.SyncPackage(ctx, osv.SyncPackagePayload{
-		Name: "react",
-	})
-
-	if err != nil {
-		log.Println(err.Error())
 		os.Exit(1)
 	} else {
-		log.Println("success")
+		log.Println("OSV initialization process completed successfully.")
 	}
 }

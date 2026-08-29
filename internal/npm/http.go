@@ -1,10 +1,12 @@
 package npm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func fetchNpmPackages(since int) (*NpmChangesResponse, error) {
@@ -17,11 +19,19 @@ func fetchNpmPackages(since int) (*NpmChangesResponse, error) {
 		return nil, err
 	}
 
+	if err := WaitForNpmRequest(context.Background()); err != nil {
+		return nil, err
+	}
+
 	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return nil, fmt.Errorf("npm replication API returned status %s", response.Status)
+	}
 
 	var packagesData NpmChangesResponse
 
@@ -33,7 +43,11 @@ func fetchNpmPackages(since int) (*NpmChangesResponse, error) {
 	return &packagesData, nil
 }
 
-func FetchNpmPackageDownloads(payload FetchNpmPackageDownloadsPayload) (*FetchNpmPackageDownloadsResponse, error) {
+func fetchNpmPackageDownloads(payload fetchNpmPackageDownloadsPayload) (fetchNpmPackageDownloadsReturnType, error) {
+	if len(payload.packages) > npmDownloadBatchLimit {
+		return nil, fmt.Errorf("too many packages in a single request: maximum is %d", npmDownloadBatchLimit)
+	}
+
 	var since string
 	if payload.since == nil {
 		since = defaultNpmDownloadPeriod
@@ -41,7 +55,7 @@ func FetchNpmPackageDownloads(payload FetchNpmPackageDownloadsPayload) (*FetchNp
 		since = *payload.since
 	}
 
-	url := npmDownloadUrl + "/" + since + "/" + payload.packageName
+	url := npmDownloadUrl + "/" + since + "/" + strings.Join(payload.packages, ",")
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -49,6 +63,10 @@ func FetchNpmPackageDownloads(payload FetchNpmPackageDownloadsPayload) (*FetchNp
 	}
 
 	client := &http.Client{}
+
+	if err := WaitForNpmRequest(context.Background()); err != nil {
+		return nil, err
+	}
 
 	response, err := client.Do(request)
 	if err != nil {
@@ -63,11 +81,28 @@ func FetchNpmPackageDownloads(payload FetchNpmPackageDownloadsPayload) (*FetchNp
 		)
 	}
 
-	var packageData FetchNpmPackageDownloadsResponse
-
-	if err := json.NewDecoder(response.Body).Decode(&packageData); err != nil {
+	var responseData json.RawMessage
+	if err := json.NewDecoder(response.Body).Decode(&responseData); err != nil {
 		return nil, err
 	}
 
-	return &packageData, nil
+	return parsePackageDownloadsResponse(responseData, payload.packages)
+}
+
+func parsePackageDownloadsResponse(data json.RawMessage, packages []string) (fetchNpmPackageDownloadsReturnType, error) {
+	if len(packages) == 1 {
+		var packageData FetchNpmPackageDownloadsResponse
+		if err := json.Unmarshal(data, &packageData); err != nil {
+			return nil, err
+		}
+
+		return fetchNpmPackageDownloadsReturnType{packages[0]: &packageData}, nil
+	}
+
+	var packageData fetchNpmPackageDownloadsReturnType
+	if err := json.Unmarshal(data, &packageData); err != nil {
+		return nil, err
+	}
+
+	return packageData, nil
 }

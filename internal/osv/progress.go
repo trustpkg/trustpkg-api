@@ -3,14 +3,12 @@ package osv
 import (
 	"fmt"
 	"io"
-	"log"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
-const progressLogInterval = 100 * time.Millisecond
+const progressLogInterval = time.Second
 
 type statusReporter struct {
 	mu        sync.Mutex
@@ -22,9 +20,7 @@ type statusReporter struct {
 	started   time.Time
 	stop      chan struct{}
 	done      chan struct{}
-	lastLine  int
 	lastPrint time.Time
-	printMu   sync.Mutex
 	finished  atomic.Bool
 }
 
@@ -69,7 +65,7 @@ func (reporter *statusReporter) finish(message string) {
 	close(reporter.stop)
 	<-reporter.done
 	reporter.print(true)
-	log.Printf("%s", message)
+	osvLog.Printf("%s", message)
 }
 
 func (reporter *statusReporter) print(final bool) {
@@ -94,18 +90,7 @@ func (reporter *statusReporter) print(final bool) {
 		line = fmt.Sprintf("%s: %.2f %s | %.2f %s/s", phase, displayedCurrent, unit, perSecond/float64(reporter.divisor), unit)
 	}
 
-	reporter.printMu.Lock()
-	defer reporter.printMu.Unlock()
-	// Clear the previous line before writing the next state.
-	padding := ""
-	if len(line) < reporter.lastLine {
-		padding = fmt.Sprintf("%*s", reporter.lastLine-len(line), "")
-	}
-	fmt.Fprintf(os.Stdout, "\r\033[2K%s%s", line, padding)
-	reporter.lastLine = len(line)
-	if final {
-		fmt.Fprintln(os.Stdout)
-	}
+	osvLog.Printf("%s", line)
 }
 
 type progressReader struct {

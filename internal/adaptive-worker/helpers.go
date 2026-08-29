@@ -1,6 +1,7 @@
 package adaptiveWorker
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -13,8 +14,14 @@ func CheckResourceUsage() (*resourcesUsage, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(cpuPercent) == 0 {
+		return nil, fmt.Errorf("CPU usage measurement returned no values")
+	}
 
 	cpuCount, err := cpu.Counts(true)
+	if err != nil {
+		return nil, err
+	}
 
 	loadAvg, err := load.Avg()
 	if err != nil {
@@ -24,6 +31,9 @@ func CheckResourceUsage() (*resourcesUsage, error) {
 	memory, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
+	}
+	if cpuCount == 0 {
+		return nil, fmt.Errorf("CPU usage measurement returned zero CPUs")
 	}
 
 	loadPercent := loadAvg.Load1 / float64(cpuCount) * 100
@@ -37,66 +47,52 @@ func CheckResourceUsage() (*resourcesUsage, error) {
 	}, nil
 }
 
-func getMaxWorkers(cpuCount int) int {
-	return cpuCount * maxWorkersPerCpu
-}
-
-func getMaxWorkersHeadroom(cpuCount int) int {
-	maxWorkersCount := getMaxWorkers(cpuCount)
-
-	return maxWorkersCount + int(float64(maxWorkersCount)*maxWorkerHeadroom)
-}
-
-func getPointsByUsage(value float64) int {
-	switch {
-	case value < 40:
-		return ExcellentUsagePoints
-	case value < 60:
-		return GoodUsagePoints
-	case value < 80:
-		return RegularUsagePoints
-	default:
-		return badUsagePoints
-	}
-}
-
-func getResourceUsageState(resources calculatedResourcesUsage) string {
-	sum := getPointsByUsage(resources.cpuPercent) +
-		getPointsByUsage(resources.loadPercent) +
-		getPointsByUsage(resources.ramPercent)
-
-	if resources.ramPercent > 90 {
+func getResourceUsageState(resources resourcesUsage) string {
+	if resources.cpuPercent >= loadCriticalThreshold ||
+		resources.loadPercent >= loadCriticalThreshold ||
+		resources.ramPercent >= ramCriticalThreshold {
 		return usageStateBad
 	}
 
-	switch {
-	case sum >= 8:
-		return usageStateExcellent
-	case sum >= 5:
-		return usageStateGood
-	case sum >= 2:
+	if resources.cpuPercent >= loadPressureThreshold ||
+		resources.loadPercent >= loadPressureThreshold ||
+		resources.ramPercent >= ramPressureThreshold {
 		return usageStateRegular
+	}
+
+	return usageStateExcellent
+}
+
+func getResourcePressureLevel(resources resourcesUsage) int {
+	switch getResourceUsageState(resources) {
+	case usageStateBad:
+		return maxPressureLevel
+	case usageStateRegular:
+		return 1
 	default:
-		return usageStateBad
+		return 0
 	}
 }
 
-func inferMinSimultaneousWorkers(currentCycle int, jobs []job) int {
-	var minSimultaneousWorkers int
-
-	nextCycle := currentCycle + 1
-
-	for _, job := range jobs {
-		cycleInterval := job.scheduledJob.SkippedCycles + 1
-
-		if nextCycle%cycleInterval == 0 {
-			minSimultaneousWorkers++
-		}
+func getResourcePressureTarget(resources resourcesUsage, currentLevel int) int {
+	target := getResourcePressureLevel(resources)
+	if target > currentLevel {
+		return target
 	}
 
-	if minSimultaneousWorkers < defaultMinWorkers {
-		minSimultaneousWorkers = defaultMinWorkers
+	if currentLevel >= maxPressureLevel &&
+		(resources.cpuPercent >= loadCriticalClear ||
+			resources.loadPercent >= loadCriticalClear ||
+			resources.ramPercent >= ramCriticalClear) {
+		return maxPressureLevel
 	}
 
-	return minSimultaneousWorkers
+	if currentLevel >= 1 &&
+		(resources.cpuPercent >= loadPressureClear ||
+			resources.loadPercent >= loadPressureClear ||
+			resources.ramPercent >= ramPressureClear) {
+		return 1
+	}
+
+	return target
 }

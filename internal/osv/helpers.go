@@ -16,6 +16,7 @@ type ParsedVulnerability struct {
 	CVSSVector  *string
 	PublishedAt *time.Time
 	ModifiedAt  *time.Time
+	WithdrawnAt *time.Time
 
 	Affected   []AffectedPackage
 	References []string
@@ -30,7 +31,7 @@ type AffectedPackage struct {
 }
 
 func parseVulnerability(raw OsvVuln) ParsedVulnerability {
-	parsed := ParsedVulnerability{OSVID: raw.ID, Summary: optionalString(raw.Summary), Description: optionalString(raw.Details), PublishedAt: optionalTime(raw.Published), ModifiedAt: optionalTime(raw.Modified)}
+	parsed := ParsedVulnerability{OSVID: raw.ID, Summary: optionalString(raw.Summary), Description: optionalString(raw.Details), PublishedAt: optionalTime(raw.Published), ModifiedAt: optionalTime(raw.Modified), WithdrawnAt: raw.Withdrawn}
 	for _, alias := range raw.Aliases {
 		if strings.HasPrefix(alias, "CVE-") {
 			parsed.CVEID = optionalString(alias)

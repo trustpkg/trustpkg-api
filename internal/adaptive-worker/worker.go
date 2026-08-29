@@ -16,9 +16,10 @@ func New(ctx context.Context) (controller *Controller, start handler) {
 	)
 
 	controller = &Controller{
-		ctx:                 ctx,
-		simultaneousWorkers: defaultMinWorkers,
-		newCron:             newCron,
+		ctx:          ctx,
+		newCron:      newCron,
+		activeGroups: make(map[string]bool),
+		monitor:      newResourceMonitor(CheckResourceUsage, resourceWindowDuration),
 	}
 
 	return controller, func() {

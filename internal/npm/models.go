@@ -16,7 +16,7 @@ type NpmChangesResponse struct {
 	Results []npmChange `json:"results"`
 }
 
-type dbDropPackagesBatchPayload struct {
+type dbInsertMarkDeprecatedBatchPayload struct {
 	packages []string
 }
 
@@ -24,13 +24,15 @@ type dbInsertPackagesBatchPayload struct {
 	packages []string
 }
 
-type FetchNpmPackageDownloadsPayload struct {
-	packageName string
-	since       *string
+type fetchNpmPackageDownloadsPayload struct {
+	packages []string
+	since    *string
 }
 
+type fetchNpmPackageDownloadsReturnType map[string]*FetchNpmPackageDownloadsResponse
+
 type FetchNpmPackageDownloadsResponse struct {
-	Downloads int    `json:"downloads"`
+	Downloads int64  `json:"downloads"`
 	End       string `json:"end"`
 	Package   string `json:"package"`
 	Start     string `json:"start"`

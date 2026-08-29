@@ -20,6 +20,7 @@ type OsvVuln struct {
 	ID               string              `json:"id"`
 	Modified         time.Time           `json:"modified"`
 	Published        time.Time           `json:"published"`
+	Withdrawn        *time.Time          `json:"withdrawn,omitempty"`
 	References       []OsvReference      `json:"references"`
 	SchemaVersion    string              `json:"schema_version"`
 	Severity         []OsvSeverity       `json:"severity"`
@@ -86,4 +87,18 @@ type OsvQuery struct {
 
 type FetchOSVEcosystemDumpPayload struct {
 	Ecosystem string
+}
+
+type OsvReplicationState struct {
+	Ecosystem           string
+	IsFirstSynchronised bool
+	LastModifiedAt      *time.Time
+	LastCheckedAt       *time.Time
+	NextCheckAt         *time.Time
+	LastSynchronizedAt  *time.Time
+}
+
+type ModifiedVulnerability struct {
+	ID         string
+	ModifiedAt time.Time
 }
