@@ -51,20 +51,24 @@ func (replicator *Replicator) Run() error {
 		return replicator.runIncremental()
 	}
 	osvLog.Printf("OSV replication mode: full, ecosystem=%s", payload.Ecosystem)
-	claimed, err := dbClaimOsvReplicationCheck(ctx, payload.Ecosystem, time.Now().Add(osvReplicationCooldown))
+	nextCheckAt := time.Now().Add(osvReplicationCooldown)
+	claimed, err := dbClaimOsvReplicationCheck(ctx, payload.Ecosystem, nextCheckAt)
 	if err != nil {
 		return fmt.Errorf("claim OSV full replication: %w", err)
 	}
 	if !claimed {
-		osvLog.Printf("OSV full replication skipped: ecosystem=%s, cooldown until %s", payload.Ecosystem, time.Now().Add(osvReplicationCooldown).Format(time.RFC3339))
+		osvLog.Printf("OSV full replication skipped: ecosystem=%s, cooldown active, next check at %s, last check at %s", payload.Ecosystem, formatOsvTime(state.NextCheckAt), formatOsvTime(state.LastCheckedAt))
 		return nil
 	}
+	osvLog.Printf("OSV cooldown started: ecosystem=%s, mode=full, reason=full dump download, next check at %s", payload.Ecosystem, formatOsvTime(&nextCheckAt))
 
 	lastModifiedAt, err := replicator.runFull()
 	if err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=full, reason=full replication failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return err
 	}
 	if err := dbCompleteOsvFullReplication(ctx, payload.Ecosystem, lastModifiedAt); err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=full, reason=state update failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return fmt.Errorf("complete OSV full replication: %w", err)
 	}
 	osvLog.Printf("OSV full replication completed: ecosystem=%s, last_modified_at=%v", payload.Ecosystem, lastModifiedAt)
@@ -184,40 +188,50 @@ func (replicator *Replicator) runIncremental() error {
 		return fmt.Errorf("get OSV incremental queue: %w", err)
 	}
 	if len(queue) > 0 {
+		osvLog.Printf("OSV incremental queue pending: ecosystem=%s, pending=%d, processing one vulnerability", payload.Ecosystem, len(queue))
 		return replicator.processIncrementalQueueItem(queue)
 	}
 
-	claimed, err := dbClaimOsvReplicationCheck(ctx, payload.Ecosystem, time.Now().Add(osvReplicationCooldown))
+	nextCheckAt := time.Now().Add(osvReplicationCooldown)
+	claimed, err := dbClaimOsvReplicationCheck(ctx, payload.Ecosystem, nextCheckAt)
 	if err != nil {
 		return fmt.Errorf("claim OSV incremental replication: %w", err)
 	}
 	if !claimed {
-		osvLog.Printf("OSV incremental synchronization skipped: ecosystem=%s, cooldown active, next check at %s", payload.Ecosystem, formatOsvTime(state.NextCheckAt))
+		osvLog.Printf("OSV incremental synchronization skipped: ecosystem=%s, cooldown active, next check at %s, last check at %s", payload.Ecosystem, formatOsvTime(state.NextCheckAt), formatOsvTime(state.LastCheckedAt))
 		return nil
 	}
+	osvLog.Printf("OSV cooldown started: ecosystem=%s, mode=incremental, reason=modified feed download, next check at %s", payload.Ecosystem, formatOsvTime(&nextCheckAt))
 	osvLog.Printf("OSV incremental synchronization: ecosystem=%s, downloading modified feed", payload.Ecosystem)
 
 	feed, err := fetchOSVModifiedIDCSV(ctx, payload.Ecosystem)
 	if err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=incremental, reason=modified feed request failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return fmt.Errorf("fetch OSV modified feed: %w", err)
 	}
 	defer feed.Close()
 
 	changes, newestModifiedAt, err := parseModifiedIDCSV(feed, state.LastModifiedAt)
 	if err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=incremental, reason=modified feed parsing failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return fmt.Errorf("parse OSV modified feed: %w", err)
 	}
 	osvLog.Printf("OSV modified feed synchronized: ecosystem=%s, changes=%d, newest_modified_at=%v", payload.Ecosystem, len(changes), newestModifiedAt)
+	if len(changes) == 0 {
+		osvLog.Printf("OSV incremental synchronization found no new changes: ecosystem=%s, cooldown until %s", payload.Ecosystem, formatOsvTime(&nextCheckAt))
+	}
 
 	queue = mergeOsvQueue(queue, changes)
 	if err := redisSetOsvQueue(ctx, payload.Ecosystem, queue); err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=incremental, reason=queue persistence failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return fmt.Errorf("save OSV incremental queue: %w", err)
 	}
 
 	if err := dbCompleteOsvIncrementalReplication(ctx, payload.Ecosystem, newestModifiedAt); err != nil {
+		osvLog.Printf("OSV cooldown retained: ecosystem=%s, mode=incremental, reason=state update failed, next check at %s, error=%v", payload.Ecosystem, formatOsvTime(&nextCheckAt), err)
 		return fmt.Errorf("complete OSV incremental replication: %w", err)
 	}
-	osvLog.Printf("OSV incremental synchronization queued: ecosystem=%s, pending=%d, next feed check at %s", payload.Ecosystem, len(queue), formatOsvTime(timePtr(time.Now().Add(osvReplicationCooldown))))
+	osvLog.Printf("OSV incremental synchronization completed: ecosystem=%s, changes=%d, pending=%d, cooldown until %s", payload.Ecosystem, len(changes), len(queue), formatOsvTime(&nextCheckAt))
 	return nil
 }
 
@@ -256,7 +270,14 @@ func (replicator *Replicator) processIncrementalQueueItem(queue []ModifiedVulner
 		return fmt.Errorf("advance OSV incremental queue: %w", err)
 	}
 
-	osvLog.Printf("OSV incremental synchronization completed: ecosystem=%s, vulnerability=%s, remaining=%d, next callback will continue the queue", payload.Ecosystem, current.ID, len(queue)-1)
+	resultStatus := "updated"
+	if status == 404 {
+		resultStatus = "withdrawn"
+	}
+	osvLog.Printf("OSV incremental vulnerability completed: ecosystem=%s, vulnerability=%s, status=%s, remaining=%d", payload.Ecosystem, current.ID, resultStatus, len(queue)-1)
+	if len(queue) == 1 {
+		osvLog.Printf("OSV incremental queue drained: ecosystem=%s, next callback will check the modified feed after its cooldown", payload.Ecosystem)
+	}
 	return nil
 }
 
@@ -283,7 +304,7 @@ func formatOsvTime(value *time.Time) string {
 	if value == nil {
 		return "not scheduled"
 	}
-	return value.Format(time.RFC3339)
+	return value.Format("2006-01-02 15:04:05 -0700 MST")
 }
 
 func timePtr(value time.Time) *time.Time {
