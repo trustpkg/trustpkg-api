@@ -16,10 +16,6 @@ dropBin:
 replicator-service:
 	air -c configs/air/replicator-service.toml
 
-.PHONY: init-osv-replication
-init-osv-replication:
-	go run ./cmd/first-osv-init-service/main.go
-
 .PHONY: api-service
 api-service:
 	air -c configs/air/api-service.toml
@@ -36,14 +32,6 @@ migrate-down:
 migrate-force:
 	migrate -path migrations -database $(DB_URL) force $(version)
 
-.PHONY: complete-testing-npm-db
-complete-testing-npm-db:
-	bash scripts/completeNpmDb.sh
-
-.PHONY: create-testing-npm-db
-create-testing-npm-db:
-	bash scripts/createTestingNpmDb.sh
-
 .PHONY: help
 help:
 	@echo "Available commands:"
@@ -52,8 +40,7 @@ help:
 	@echo "make build                  	   - Build the project"
 	@echo "make dropBin                    - Drop the binary files"
 	@echo "make replicator-service         - Run the replicator service with air in development mode" 
+	@echo "make api-service                - Run api service"
 	@echo "make migrate-up                 - Run database migrations up"
 	@echo "make migrate-down               - Run database migrations down"
 	@echo "make migrate-force              - Force database migration to a specific version (usage: make migrate-force version=<version_number>)"
-	@echo "make complete-testing-npm-db    - Complete testing npm database"
-	@echo "make create-testing-npm-db      - Create testing npm database"
