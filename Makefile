@@ -20,6 +20,10 @@ replicator-service:
 init-osv-replication:
 	go run ./cmd/first-osv-init-service/main.go
 
+.PHONY: api-service
+api-service:
+	air -c configs/air/api-service.toml
+
 .PHONY: migrate-up
 migrate-up:
 	migrate -path migrations -database $(DB_URL) up
