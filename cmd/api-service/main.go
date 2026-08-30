@@ -6,6 +6,7 @@ import (
 
 	"github.com/trustpkg/trustpkg-api/db"
 	"github.com/trustpkg/trustpkg-api/internal/router"
+	"github.com/trustpkg/trustpkg-api/internal/typesense"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -15,6 +16,7 @@ func main() {
 
 	db.ConnectDb()
 	db.ConnectRedis(ctx)
+	typesense.NewInstance(ctx)
 
 	app := fiber.New()
 

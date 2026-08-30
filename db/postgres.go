@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -24,7 +23,7 @@ var Pool *pgxpool.Pool
 
 func ConnectDb() {
 	if err := goDotEnv.Load(".env"); err != nil {
-		log.Println(".env file not found, using system environment variables")
+		dbLog.Postgres.Println(".env file not found, using system environment variables")
 	}
 
 	dsn := strings.TrimSpace(os.Getenv("DB_URL"))
@@ -38,7 +37,7 @@ func ConnectDb() {
 		}
 
 		if dbConfig.host == "" || dbConfig.port == "" || dbConfig.user == "" || dbConfig.dbName == "" {
-			fmt.Fprintln(os.Stderr, "Missing DB config. Set DB_URL or POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB (copy .env.example to .env).")
+			dbLog.Postgres.Println("Missing DB config. Set DB_URL or POSTGRES_HOST, POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB (copy .env.example to .env).")
 			os.Exit(1)
 		}
 
@@ -47,7 +46,7 @@ func ConnectDb() {
 
 	pool, err := pgxpool.New(context.Background(), dsn)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		dbLog.Postgres.Printf("Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -55,11 +54,11 @@ func ConnectDb() {
 	defer cancel()
 	err = pool.Ping(ctx)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to ping database: %v\n", err)
+		dbLog.Postgres.Printf("Unable to ping database: %v\n", err)
 		os.Exit(1)
 	}
 
 	Pool = pool
-	
-	log.Println("Connected to postgres database successfully")
+
+	dbLog.Postgres.Println("Connected to postgres database successfully")
 }
