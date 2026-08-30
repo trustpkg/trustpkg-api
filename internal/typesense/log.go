@@ -11,7 +11,7 @@ type typesenseLogger struct {
 	prefix string
 }
 
-var typesenseLog = newTypesenseLogger("\033[34m[TYPESENSE]\033[0m")
+var typesenseLog = newTypesenseLogger("\033[31m[TYPESENSE]\033[0m")
 
 func newTypesenseLogger(prefix string) *typesenseLogger {
 	return &typesenseLogger{logger: log.New(os.Stderr, "", log.LstdFlags), prefix: prefix}

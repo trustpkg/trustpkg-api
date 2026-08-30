@@ -37,7 +37,7 @@ type databaseLogger struct {
 }
 
 var dbLog = &databaseLogger{
-	Redis:     newLogger("\033[31m[REDIS]\033[0m"),
+	Redis:     newLogger("\033[34m[REDIS]\033[0m"),
 	Postgres:  newLogger("\033[38;5;208m[POSTGRES]\033[0m"),
-	Typesense: newLogger("\033[34m[TYPESENSE]\033[0m"),
+	Typesense: newLogger("\033[31m[TYPESENSE]\033[0m"),
 }
