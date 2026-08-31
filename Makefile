@@ -48,7 +48,7 @@ init:
 	bash scripts/init.sh
 
 .PHONY: build
-build:
+build: docs
 	bash scripts/build.sh
 
 .PHONY: dropBin
@@ -60,7 +60,7 @@ replicator-service:
 	air -c configs/air/replicator-service.toml
 
 .PHONY: api-service
-api-service:
+api-service: docs
 	air -c configs/air/api-service.toml
 
 .PHONY: migrate-up

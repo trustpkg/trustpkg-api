@@ -160,6 +160,7 @@ This generates `docs/swagger.json`, `docs/openapi.json`, `docs/openapi.types.ts`
 `docs/openapi.zod.ts`. The OpenAPI schema is the source of truth for the generated
 TypeScript types and Zod schemas, including required fields, enums, ranges, and the npm
 package-name pattern.
+The `docs/` directory is generated locally and ignored by Git.
 
 The Postman collection is generated from the same OpenAPI document:
 

@@ -4,6 +4,4 @@ bin
 tmp
 tmp/*
 
-docs/*.json
-docs/*.yaml
-docs/*.ts
+docs/
