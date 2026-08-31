@@ -21,9 +21,22 @@ func newHandlers(typesenseClient *typesense.Controller, rateLimiter *ipRateLimit
 	}
 }
 
+// search godoc
+// @Summary Search packages
+// @Description Searches npm package names using prefix matching and returns the complete package documents.
+// @Tags packages
+// @ID searchPackages
+// @Produce json
+// @Param query query string true "Package name or scoped package name" minlength(1) maxlength(214)
+// @Param limit query int false "Maximum number of results" minimum(1) maximum(20) default(10)
+// @Success 200 {object} packagesApi.SearchResponse
+// @Failure 400 {object} packagesApi.SearchResponse
+// @Failure 429 {object} packagesApi.SearchResponse
+// @Failure 500 {object} packagesApi.SearchResponse
+// @Router /packages/search [get]
 func (handlers *handlers) search(ctx fiber.Ctx) error {
 	for key := range ctx.Request().Header.All() {
-		if _, allowed := allowedSearchHeaders[strings.ToLower(string(key))]; !allowed {
+		if !isAllowedSearchHeader(string(key)) {
 			return respond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
 		}
 	}
@@ -82,13 +95,13 @@ func (handlers *handlers) search(ctx fiber.Ctx) error {
 	if searchResult == nil {
 		return respond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
 	}
-	documents := make([]searchDocument, 0)
+	documents := make([]SearchDocument, 0)
 	if searchResult.Hits != nil {
 		for _, hit := range *searchResult.Hits {
 			if hit.Document == nil {
 				continue
 			}
-			document := searchDocument{
+			document := SearchDocument{
 				ID:           stringValue((*hit.Document)["id"]),
 				Name:         stringValue((*hit.Document)["name"]),
 				Ecosystem:    stringValue((*hit.Document)["ecosystem"]),

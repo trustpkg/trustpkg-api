@@ -22,7 +22,7 @@ type ipRateLimiter struct {
 func newIPRateLimiter() *ipRateLimiter {
 	return &ipRateLimiter{
 		trustedProxies: loadTrustedProxies(),
-		development:    strings.EqualFold(strings.TrimSpace(os.Getenv("ENVIRONMENT")), "development"),
+		development:    isDevelopmentEnvironment(),
 	}
 }
 

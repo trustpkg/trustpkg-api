@@ -50,6 +50,30 @@ function incrementVersionByConventionalCommits() {
 
 newVersion=$(incrementVersionByConventionalCommits "$version" "$commit_range")
 
+function updateApiDocumentationVersion() {
+  local target_version=$1
+  local api_entrypoint="cmd/api-service/main.go"
+
+  if [ ! -f "$api_entrypoint" ]; then
+    echo "Error: API entrypoint $api_entrypoint not found."
+    exit 1
+  fi
+
+  if ! grep -qE "^// @version ${target_version}$" "$api_entrypoint"; then
+    sed -i -E "s|^// @version .*$|// @version ${target_version}|" "$api_entrypoint"
+    go run github.com/swaggo/swag/cmd/swag@v1.8.1 init -g cmd/api-service/main.go --parseInternal --output docs
+
+    if [ -f "docs/openapi.json" ]; then
+      npx -y swagger2openapi docs/swagger.json -o docs/openapi.json
+      node scripts/add-openapi-constraints.mjs docs/openapi.json
+    fi
+
+    echo "API documentation version updated to $target_version"
+  fi
+}
+
+updateApiDocumentationVersion "$newVersion"
+
 if [ "$newVersion" != "$version" ]; then
   git tag "$newVersion"
   git push origin "$newVersion"

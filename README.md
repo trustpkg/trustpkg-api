@@ -136,3 +136,41 @@ Apply migrations before starting the service:
 ```bash
 make migrate-up
 ```
+
+## Package search API
+
+The package search endpoint is available at `GET /api/packages/search`.
+
+Query parameters:
+
+- `query` (required): npm package name, 1-214 characters. Scoped names such as
+	`@scope/package` are supported.
+- `limit` (optional): number of results from 1 to 20. The default is 10.
+
+Interactive Swagger documentation is available at `/api/swagger/`, and the OpenAPI 3
+document is available at `/api/openapi.json`.
+
+Generate the documentation and client artifacts with:
+
+```bash
+make api-artifacts
+```
+
+This generates `docs/swagger.json`, `docs/openapi.json`, `docs/openapi.types.ts`, and
+`docs/openapi.zod.ts`. The OpenAPI schema is the source of truth for the generated
+TypeScript types and Zod schemas, including required fields, enums, ranges, and the npm
+package-name pattern.
+
+The Postman collection is generated from the same OpenAPI document:
+
+```bash
+make postman-collection
+```
+
+To update an existing collection, set `POSTMAN_COLLECTION_UID` in `.env` and run:
+
+```bash
+make postman-sync
+```
+
+When `POSTMAN_COLLECTION_UID` is empty, synchronization is skipped without an error.
