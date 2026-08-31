@@ -16,11 +16,11 @@ func main() {
 
 	db.ConnectDb()
 	db.ConnectRedis(ctx)
-	typesense.NewInstance(ctx)
+	typesenseClient := typesense.NewInstance(ctx)
 
 	app := fiber.New()
 
-	router.Initialize(app)
+	router.Initialize(app, typesenseClient)
 
 	app.Listen(":" + os.Getenv("API_SERVICE_PORT"))
 }

@@ -7,4 +7,6 @@ const (
 	maxSimultaneousAmountOfRequest = 100
 	circuitBreakerInterval         = 2 * time.Minute
 	circuitBreakerTimeout          = 30 * time.Second
+
+	PackagesCollection = "packages"
 )
