@@ -1,0 +1,308 @@
+{
+  "item": [
+    {
+      "name": "packages",
+      "description": "",
+      "item": [
+        {
+          "name": "search",
+          "description": "",
+          "item": [
+            {
+              "id": "83778cd0-b95f-47cc-95c7-b0060ef597b3",
+              "name": "Search packages",
+              "request": {
+                "name": "Search packages",
+                "description": {
+                  "content": "Searches npm package names using prefix matching and returns the complete package documents.",
+                  "type": "text/plain"
+                },
+                "url": {
+                  "path": [
+                    "packages",
+                    "search"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Package name or scoped package name",
+                        "type": "text/plain"
+                      },
+                      "key": "query",
+                      "value": "@r"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "Maximum number of results",
+                        "type": "text/plain"
+                      },
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+              },
+              "response": [
+                {
+                  "id": "e0799e55-93aa-4c8f-a91b-d8e9b49c2476",
+                  "name": "OK",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "packages",
+                        "search"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "(Required) Package name or scoped package name",
+                            "type": "text/plain"
+                          },
+                          "key": "query",
+                          "value": "@r"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {}
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "36ebdab5-0a7f-432b-8a5a-44003dda5b7a",
+                  "name": "Bad Request",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "packages",
+                        "search"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "(Required) Package name or scoped package name",
+                            "type": "text/plain"
+                          },
+                          "key": "query",
+                          "value": "@r"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {}
+                  },
+                  "status": "Bad Request",
+                  "code": 400,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "e38c01a1-2da4-4b3f-992a-f017de711ba8",
+                  "name": "Too Many Requests",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "packages",
+                        "search"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "(Required) Package name or scoped package name",
+                            "type": "text/plain"
+                          },
+                          "key": "query",
+                          "value": "@r"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {}
+                  },
+                  "status": "Too Many Requests",
+                  "code": 429,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                },
+                {
+                  "id": "f4424ddc-39cc-4b44-9c5f-60922c23d6a9",
+                  "name": "Internal Server Error",
+                  "originalRequest": {
+                    "url": {
+                      "path": [
+                        "packages",
+                        "search"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "(Required) Package name or scoped package name",
+                            "type": "text/plain"
+                          },
+                          "key": "query",
+                          "value": "@r"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {}
+                  },
+                  "status": "Internal Server Error",
+                  "code": 500,
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "cookie": [],
+                  "_postman_previewlanguage": "json"
+                }
+              ],
+              "event": [],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api"
+    }
+  ],
+  "info": {
+    "_postman_id": "98c0f984-8317-4bd0-b480-08bf91bf039b",
+    "name": "TrustPkg API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "API for searching npm packages and their vulnerability data.",
+      "type": "text/plain"
+    }
+  }
+}

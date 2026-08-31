@@ -40,8 +40,8 @@ func intMap(values map[string]any) map[string]int {
 	return result
 }
 
-func respond(ctx fiber.Ctx, status int, message string, documents []searchDocument) error {
-	return ctx.Status(status).JSON(searchResponse{
+func respond(ctx fiber.Ctx, status int, message string, documents []SearchDocument) error {
+	return ctx.Status(status).JSON(SearchResponse{
 		Status:    status,
 		Message:   message,
 		Documents: documents,
