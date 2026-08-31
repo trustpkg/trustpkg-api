@@ -34,6 +34,8 @@ var (
 
 	//go:embed sql/select_unscoped_packages.sql
 	querySelectUnscopedPackages string
+	//go:embed sql/mark_packages_need_update.sql
+	queryMarkPackagesNeedUpdate string
 )
 
 const (
@@ -97,6 +99,11 @@ func dbInsertPackagesPopularity(ctx context.Context, transaction pgx.Tx, package
 
 	_, err = transaction.Exec(ctx, queryInsertPackagesPopularityBatch, packagesDownloadsJSON)
 
+	return err
+}
+
+func dbMarkPackagesNeedUpdate(ctx context.Context, packages []string) error {
+	_, err := db.Pool.Exec(ctx, queryMarkPackagesNeedUpdate, packages)
 	return err
 }
 

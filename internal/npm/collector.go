@@ -142,7 +142,8 @@ func (collector *Collector) runWhitelistPipeline() {
 			packages: []string{currentPackage},
 		})
 		if err != nil {
-			npmCollectorLog.Printf("Error fetching npm package downloads: %s", err.Error())
+			collector.markPackagesNeedUpdate([]string{currentPackage}, err)
+			collector.advanceWhitelistPackage(currentPackage, state.queue)
 			return
 		}
 
@@ -199,7 +200,8 @@ func (collector *Collector) runWhitelistPipeline() {
 			packages: slicedUnscopedQueue,
 		})
 		if err != nil {
-			npmCollectorLog.Printf("Error fetching npm package downloads: %s", err.Error())
+			collector.markPackagesNeedUpdate(slicedUnscopedQueue, err)
+			collector.advanceWhitelistBatch(lastPackage, len(slicedUnscopedQueue) == len(unscopedPackages), scopedPackages)
 			return
 		}
 
@@ -271,6 +273,7 @@ func (collector *Collector) runBasicPipeline() {
 	}
 
 	if !collector.saveBasicPopularity(packages) {
+		collector.advanceBasicUnscoped(packages[len(packages)-1])
 		return
 	}
 	pipe := db.Redis.Pipeline()
@@ -304,6 +307,7 @@ func (collector *Collector) runBasicScopedPipeline(state baseCollectionState) {
 
 	currentPackage := queue[0]
 	if !collector.saveBasicPopularity([]string{currentPackage}) {
+		collector.advanceBasicScoped(queue)
 		return
 	}
 
@@ -325,7 +329,7 @@ func (collector *Collector) runBasicScopedPipeline(state baseCollectionState) {
 func (collector *Collector) saveBasicPopularity(packages []string) bool {
 	data, err := fetchNpmPackageDownloads(fetchNpmPackageDownloadsPayload{packages: packages})
 	if err != nil {
-		npmCollectorLog.Printf("Error fetching basic package downloads: %s", err.Error())
+		collector.markPackagesNeedUpdate(packages, err)
 		return false
 	}
 
@@ -346,6 +350,74 @@ func (collector *Collector) saveBasicPopularity(packages []string) bool {
 	}
 
 	return true
+}
+
+func (collector *Collector) markPackagesNeedUpdate(packages []string, fetchErr error) {
+	npmCollectorLog.Printf("Error fetching npm package downloads: packages=%v, error=%s", packages, fetchErr)
+	if err := dbMarkPackagesNeedUpdate(collector.ctx, packages); err != nil {
+		npmCollectorLog.Printf("Error marking packages need_update: packages=%v, error=%s", packages, err)
+		return
+	}
+	npmCollectorLog.Printf("Marked packages need_update=false: packages=%v", packages)
+}
+
+func (collector *Collector) advanceWhitelistPackage(currentPackage string, queue []string) {
+	pipe := db.Redis.Pipeline()
+	redisSetLastPackage(collector.ctx, pipe, currentPackage)
+	if currentPackage == queue[len(queue)-1] {
+		redisSetWatchlistGathered(collector.ctx, pipe)
+	}
+	if _, err := pipe.Exec(collector.ctx); err != nil {
+		npmCollectorLog.Printf("Error advancing whitelist package after download error: package=%s, error=%v", currentPackage, err)
+		return
+	}
+	npmCollectorLog.Printf("Skipped failed whitelist package and continued: package=%s", currentPackage)
+}
+
+func (collector *Collector) advanceWhitelistBatch(lastPackage string, allUnscopedGathered bool, scopedPackages []string) {
+	pipe := db.Redis.Pipeline()
+	if allUnscopedGathered {
+		if len(scopedPackages) == 0 {
+			return
+		}
+		firstOfScoped := scopedPackages[0]
+		index := slices.Index(packagesWatchlist[:], firstOfScoped)
+		redisSetAllUnscopedGathered(collector.ctx, pipe)
+		redisSetLastPackage(collector.ctx, pipe, packagesWatchlist[index-1])
+	} else {
+		redisSetLastPackage(collector.ctx, pipe, lastPackage)
+	}
+	if _, err := pipe.Exec(collector.ctx); err != nil {
+		npmCollectorLog.Printf("Error advancing whitelist batch after download error: last package=%s, error=%v", lastPackage, err)
+		return
+	}
+	npmCollectorLog.Printf("Skipped failed whitelist batch and continued: last package=%s", lastPackage)
+}
+
+func (collector *Collector) advanceBasicUnscoped(lastPackage string) {
+	pipe := db.Redis.Pipeline()
+	redisSetBasicLastPackage(collector.ctx, pipe, lastPackage)
+	if _, err := pipe.Exec(collector.ctx); err != nil {
+		npmCollectorLog.Printf("Error advancing basic unscoped state after download error: last package=%s, error=%v", lastPackage, err)
+		return
+	}
+	npmCollectorLog.Printf("Skipped failed basic unscoped batch and continued: last package=%s", lastPackage)
+}
+
+func (collector *Collector) advanceBasicScoped(queue []string) {
+	remainingQueue := queue[1:]
+	pipe := db.Redis.Pipeline()
+	redisSetBasicLastPackage(collector.ctx, pipe, queue[0])
+	if err := redisSetBasicQueue(collector.ctx, pipe, remainingQueue); err != nil {
+		npmCollectorLog.Printf("Error advancing basic scoped queue after download error: package=%s, error=%v", queue[0], err)
+		return
+	}
+	redisSetShouldRunScoped(collector.ctx, pipe, len(remainingQueue) > 0)
+	if _, err := pipe.Exec(collector.ctx); err != nil {
+		npmCollectorLog.Printf("Error advancing basic scoped state after download error: package=%s, error=%v", queue[0], err)
+		return
+	}
+	npmCollectorLog.Printf("Skipped failed basic scoped package and continued: package=%s, remaining=%d", queue[0], len(remainingQueue))
 }
 
 func (collector *Collector) setCooldown() {

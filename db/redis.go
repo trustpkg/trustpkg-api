@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/redis/go-redis/v9"
@@ -25,9 +24,9 @@ func ConnectRedis(ctx context.Context) {
 
 	_, err := db.Ping(ctx).Result()
 	if err != nil {
-		log.Println(fmt.Errorf(redisConnectionErrorMessage, err))
+		dbLog.Redis.Println(fmt.Errorf(redisConnectionErrorMessage, err))
 	} else {
-		log.Println(redisConnectionSuccessMessage)
+		dbLog.Redis.Println(redisConnectionSuccessMessage)
 	}
 
 	Redis = db

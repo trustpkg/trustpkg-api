@@ -7,11 +7,13 @@ import (
 	adaptiveWorker "github.com/trustpkg/trustpkg-api/internal/adaptive-worker"
 	"github.com/trustpkg/trustpkg-api/internal/npm"
 	"github.com/trustpkg/trustpkg-api/internal/osv"
+	"github.com/trustpkg/trustpkg-api/internal/typesense"
 )
 
 const (
-	npmReplicationID = "npm-replication"
-	osvReplicationID = "osv-replication"
+	npmReplicationID    = "npm-replication"
+	osvReplicationID    = "osv-replication"
+	typesensePipelineID = "typesense-packages"
 )
 
 func main() {
@@ -21,6 +23,7 @@ func main() {
 
 	db.ConnectDb()
 	db.ConnectRedis(ctx)
+	typesenseController := typesense.NewInstance(ctx)
 
 	worker, startWorker := adaptiveWorker.New(ctx)
 
@@ -54,6 +57,16 @@ func main() {
 			}
 		},
 		SkippedCycles: 4,
+	})
+
+	worker.ScheduleJob(adaptiveWorker.Job{
+		ID: typesensePipelineID,
+		Handler: func() {
+			if err := typesense.Pipeline(ctx, typesenseController); err != nil {
+				typesense.LogError(err)
+			}
+		},
+		SkippedCycles: 2,
 	})
 
 	startWorker()

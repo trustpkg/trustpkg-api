@@ -45,10 +45,23 @@ services:
       - redis
     networks:
       - trustpkg-net
+
+  typesense: 
+    image: docker.io/typesense/typesense:30.2
+    ports:
+     - 8108:8108
+    command: >
+      --data-dir /var/lib/typesense/data
+      --api-key=${TYPESENSE_API_KEY}
+    volumes:
+      - typesenseData:/var/lib/typesense/data
+    networks:
+      - trustpkg-net
     
 volumes:
     data:
     redisData:
+    typesenseData:
   
 networks:
   trustpkg-net:
