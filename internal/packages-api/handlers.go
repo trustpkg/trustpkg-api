@@ -35,6 +35,8 @@ func newHandlers(typesenseClient *typesense.Controller, rateLimiter *ipRateLimit
 // @Failure 500 {object} packagesApi.SearchResponse
 // @Router /packages/search [get]
 func (handlers *handlers) search(ctx fiber.Ctx) error {
+	ctx.Set("Access-Control-Allow-Origin", "*")
+
 	for key := range ctx.Request().Header.All() {
 		if !isAllowedSearchHeader(string(key)) {
 			return respond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)

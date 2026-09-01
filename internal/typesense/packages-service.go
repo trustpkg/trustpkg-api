@@ -81,6 +81,15 @@ func Pipeline(ctx context.Context, writer TypesenseWriter) error {
 		typesenseLog.Printf("Package pipeline upload failed: cycle=%d phase=%s batch_size=%d error=%v", state.Cycle, state.Phase, len(documents), err)
 		return err
 	}
+	packageIDs := make([]int64, len(documents))
+	for index := range documents {
+		packageIDs[index] = packageID(documents[index].ID)
+	}
+	if err := dbClearPackagesNeedUpdate(ctx, packageIDs); err != nil {
+		_ = dbSavePipelineState(ctx, state, "failed", err.Error())
+		typesenseLog.Printf("Package pipeline update flag reset failed: cycle=%d phase=%s batch_size=%d error=%v", state.Cycle, state.Phase, len(documents), err)
+		return err
+	}
 
 	if state.Phase == pipelinePhaseWatchlist {
 		watchlist := npm.PackageWatchlist()
@@ -90,7 +99,7 @@ func Pipeline(ctx context.Context, writer TypesenseWriter) error {
 			state.Phase = pipelinePhaseDatabase
 		}
 	} else {
-		state.LastPackageID = packageID(documents[len(documents)-1].ID)
+		state.LastPackageID = max(state.LastPackageID, packageID(documents[len(documents)-1].ID))
 		state.DatabaseDocumentsUploaded += int64(len(documents))
 	}
 	state.DocumentsUploaded += int64(len(documents))

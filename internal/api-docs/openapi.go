@@ -12,8 +12,7 @@ import (
 )
 
 const passwordComplexityPattern = `^(?=.*[0-9])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,64}$`
-
-const npmPackagePattern = `^@?[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)?$`
+const npmPackagePattern = `^\s*@?[a-z0-9][a-z0-9._-]*(\s+[a-z0-9][a-z0-9._-]*)?(/[a-z0-9][a-z0-9._-]*)?\s*$`
 
 func applyPasswordPatternConstraints(openAPIDoc *openapi3.T) {
 	if openAPIDoc == nil {

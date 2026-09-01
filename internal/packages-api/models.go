@@ -6,7 +6,9 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-const npmPackageRegex = `^@?[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)?$`
+var npmPackageRegex = regexp.MustCompile(
+	`^\s*@?[a-z0-9][a-z0-9._-]*(\s+[a-z0-9][a-z0-9._-]*)?(/[a-z0-9][a-z0-9._-]*)?\s*$`,
+)
 
 type SearchParams struct {
 	Query string
@@ -18,7 +20,7 @@ func (params *SearchParams) validate() error {
 		validation.Field(&params.Query,
 			validation.Required,
 			validation.Length(1, 214),
-			validation.Match(regexp.MustCompile(npmPackageRegex)),
+			validation.Match(npmPackageRegex),
 		),
 		validation.Field(&params.Limit, validation.Min(1), validation.Max(20)),
 	)

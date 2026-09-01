@@ -9,7 +9,7 @@
           "description": "",
           "item": [
             {
-              "id": "83778cd0-b95f-47cc-95c7-b0060ef597b3",
+              "id": "70436ff9-e948-44bb-aa28-c6d85cb21cd4",
               "name": "Search packages",
               "request": {
                 "name": "Search packages",
@@ -33,7 +33,7 @@
                         "type": "text/plain"
                       },
                       "key": "query",
-                      "value": "@r"
+                      "value": "m56"
                     },
                     {
                       "disabled": false,
@@ -59,7 +59,7 @@
               },
               "response": [
                 {
-                  "id": "e0799e55-93aa-4c8f-a91b-d8e9b49c2476",
+                  "id": "cf0a88bc-5bc2-4c54-b706-5ffb3aea5aba",
                   "name": "OK",
                   "originalRequest": {
                     "url": {
@@ -78,7 +78,7 @@
                             "type": "text/plain"
                           },
                           "key": "query",
-                          "value": "@r"
+                          "value": "m56"
                         },
                         {
                           "disabled": false,
@@ -109,12 +109,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "36ebdab5-0a7f-432b-8a5a-44003dda5b7a",
+                  "id": "5d38f74f-df4c-4b2c-8d93-8100af54e80e",
                   "name": "Bad Request",
                   "originalRequest": {
                     "url": {
@@ -133,7 +133,7 @@
                             "type": "text/plain"
                           },
                           "key": "query",
-                          "value": "@r"
+                          "value": "m56"
                         },
                         {
                           "disabled": false,
@@ -164,12 +164,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "e38c01a1-2da4-4b3f-992a-f017de711ba8",
+                  "id": "b1944dff-ed9d-4d9d-96d1-99edc00cbcb4",
                   "name": "Too Many Requests",
                   "originalRequest": {
                     "url": {
@@ -188,7 +188,7 @@
                             "type": "text/plain"
                           },
                           "key": "query",
-                          "value": "@r"
+                          "value": "m56"
                         },
                         {
                           "disabled": false,
@@ -219,12 +219,12 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 },
                 {
-                  "id": "f4424ddc-39cc-4b44-9c5f-60922c23d6a9",
+                  "id": "402c4b77-f812-459c-9d6e-fe7270ff4ae5",
                   "name": "Internal Server Error",
                   "originalRequest": {
                     "url": {
@@ -243,7 +243,7 @@
                             "type": "text/plain"
                           },
                           "key": "query",
-                          "value": "@r"
+                          "value": "m56"
                         },
                         {
                           "disabled": false,
@@ -274,7 +274,7 @@
                       "value": "application/json"
                     }
                   ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 200,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@7fr\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"88m/an7ydihz3qj\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
+                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
                   "cookie": [],
                   "_postman_previewlanguage": "json"
                 }
@@ -297,7 +297,7 @@
     }
   ],
   "info": {
-    "_postman_id": "98c0f984-8317-4bd0-b480-08bf91bf039b",
+    "_postman_id": "e512c13b-1ca1-4f75-9aaf-0cb3f769f0e7",
     "name": "TrustPkg API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {

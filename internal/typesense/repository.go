@@ -23,6 +23,8 @@ var (
 	querySelectWatchlistDocuments string
 	//go:embed sql/select_database_documents.sql
 	querySelectDatabaseDocuments string
+	//go:embed sql/clear_packages_need_update.sql
+	queryClearPackagesNeedUpdate string
 )
 
 func redisGetPipelineState(ctx context.Context) (*pipelineState, error) {
@@ -87,6 +89,15 @@ func dbSelectDatabaseDocuments(ctx context.Context, lastID int64, limit int) ([]
 	}
 	defer rows.Close()
 	return dbScanPackageDocuments(rows)
+}
+
+func dbClearPackagesNeedUpdate(ctx context.Context, packageIDs []int64) error {
+	if len(packageIDs) == 0 {
+		return nil
+	}
+
+	_, err := db.Pool.Exec(ctx, queryClearPackagesNeedUpdate, packageIDs)
+	return err
 }
 
 func dbScanPackageDocuments(rows pgx.Rows) ([]packageDocument, error) {

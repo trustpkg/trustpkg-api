@@ -3,7 +3,7 @@ WITH selected AS (
     FROM packages p
     JOIN packages_data d ON d.package_id = p.id
     WHERE p.ecosystem = 'npm'
-      AND p.id > $1
+            AND (p.id > $1 OR d.need_update)
     ORDER BY p.id
     LIMIT $2
 ), vulnerability_counts AS (
