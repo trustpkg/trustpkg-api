@@ -4,7 +4,10 @@ OPENAPI_FILE ?= docs/openapi.json
 OPENAPI_TYPES_FILE ?= docs/openapi.types.ts
 OPENAPI_ZOD_FILE ?= docs/openapi.zod.ts
 POSTMAN_COLLECTION_FILE ?= postman/trust-pkg-api.json
-POSTMAN_BASE_URL ?= http://localhost:3001/api
+POSTMAN_BASE_URL ?= http://localhost:3001
+POSTGRES_CONTAINER ?= trustpkg-api_db_1
+BATCH_SIZE ?= 2000
+PAUSE_SECONDS ?= 0.20
 
 .PHONY: docs
 docs:
@@ -75,6 +78,14 @@ migrate-down:
 migrate-force:
 	migrate -path migrations -database $(DB_URL) force $(version)
 
+.PHONY: backfill-package-slugs
+backfill-package-slugs: migrate-up
+	podman exec -i "$(POSTGRES_CONTAINER)" psql -v batch_size="$(BATCH_SIZE)" -v pause_seconds="$(PAUSE_SECONDS)" -U "$${POSTGRES_USER:-user}" -d "$${POSTGRES_DB:-postgres}" -f - < scripts/backfill_packages_slug.sql
+
+.PHONY: reindex-package-slugs
+reindex-package-slugs:
+	go run ./cmd/typesense-slug-reindex $(ARGS)
+
 .PHONY: help
 help:
 	@echo "Available commands:"
@@ -94,3 +105,7 @@ help:
 	@echo "make migrate-up                 - Run database migrations up"
 	@echo "make migrate-down               - Run database migrations down"
 	@echo "make migrate-force              - Force database migration to a specific version (usage: make migrate-force version=<version_number>)"
+	@echo "make backfill-package-slugs     - Backfill and uniquely index package slugs"
+	@echo "                                (options: BATCH_SIZE=2000 PAUSE_SECONDS=0.20)"
+	@echo "make reindex-package-slugs      - Populate slugs in the Typesense packages collection with parameters ARGS='-batch-size 128 -pause 250ms'"
+	@echo "                                (options: ARGS='-batch-size 128 -pause 250ms')"

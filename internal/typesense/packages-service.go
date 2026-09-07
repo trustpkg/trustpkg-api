@@ -17,6 +17,7 @@ const (
 
 type TypesenseWriter interface {
 	CreateCollection(*CollectionPayload) error
+	UpdateCollection(*CollectionPayload) error
 	UpsertDocuments(*UpsertPayload) error
 }
 
@@ -112,8 +113,14 @@ func Pipeline(ctx context.Context, writer TypesenseWriter) error {
 }
 
 func ensurePackageCollection(writer TypesenseWriter) error {
-	if err := writer.CreateCollection(&CollectionPayload{Name: PackageSchema.Name, Collection: PackageSchema}); err != nil && !isCollectionAlreadyExistsError(err) {
-		return fmt.Errorf("initialize Typesense packages collection: %w", err)
+	collection := &CollectionPayload{Name: PackageSchema.Name, Collection: PackageSchema}
+	if err := writer.CreateCollection(collection); err != nil {
+		if !isCollectionAlreadyExistsError(err) {
+			return fmt.Errorf("initialize Typesense packages collection: %w", err)
+		}
+		if err := writer.UpdateCollection(collection); err != nil {
+			return fmt.Errorf("update Typesense packages collection schema: %w", err)
+		}
 	}
 	typesenseLog.Print("Typesense packages collection is ready")
 	return nil

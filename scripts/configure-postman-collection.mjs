@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const filePath = process.argv[2] ?? "postman/trust-pkg-api.json";
-const baseUrl = process.argv[3] ?? "http://localhost:3001/api";
+const baseUrl = process.argv[3] ?? "http://localhost:3001";
 const collection = JSON.parse(fs.readFileSync(filePath, "utf8"));
 
 collection.variable ??= [];

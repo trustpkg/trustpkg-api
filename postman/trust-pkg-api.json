@@ -1,288 +1,804 @@
 {
   "item": [
     {
-      "name": "packages",
+      "name": "api",
       "description": "",
       "item": [
         {
-          "name": "search",
+          "name": "packages",
           "description": "",
           "item": [
             {
-              "id": "70436ff9-e948-44bb-aa28-c6d85cb21cd4",
-              "name": "Search packages",
-              "request": {
-                "name": "Search packages",
-                "description": {
-                  "content": "Searches npm package names using prefix matching and returns the complete package documents.",
-                  "type": "text/plain"
-                },
-                "url": {
-                  "path": [
-                    "packages",
-                    "search"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [
+              "name": "list",
+              "description": "",
+              "item": [
+                {
+                  "id": "c623b255-6e57-4179-b22c-93c3bd548b40",
+                  "name": "List packages",
+                  "request": {
+                    "name": "List packages",
+                    "description": {
+                      "content": "List packages with pagination and sorting.",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": [
+                        "api",
+                        "packages",
+                        "list"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Page number",
+                            "type": "text/plain"
+                          },
+                          "key": "page",
+                          "value": "1"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                            "type": "text/plain"
+                          },
+                          "key": "sortBy",
+                          "value": "popularity"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Sort order (asc or desc)",
+                            "type": "text/plain"
+                          },
+                          "key": "order",
+                          "value": "desc"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Package ecosystem",
+                            "type": "text/plain"
+                          },
+                          "key": "ecosystem",
+                          "value": "npm"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {},
+                    "auth": null
+                  },
+                  "response": [
                     {
-                      "disabled": false,
-                      "description": {
-                        "content": "(Required) Package name or scoped package name",
-                        "type": "text/plain"
+                      "id": "7c9bbd4c-c228-4b04-b9c4-d0e2c7e857c6",
+                      "name": "OK",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "list"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Page number",
+                                "type": "text/plain"
+                              },
+                              "key": "page",
+                              "value": "1"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                                "type": "text/plain"
+                              },
+                              "key": "sortBy",
+                              "value": "popularity"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Sort order (asc or desc)",
+                                "type": "text/plain"
+                              },
+                              "key": "order",
+                              "value": "desc"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Package ecosystem",
+                                "type": "text/plain"
+                              },
+                              "key": "ecosystem",
+                              "value": "npm"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
                       },
-                      "key": "query",
-                      "value": "m56"
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ],\n        \"key_1\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
                     },
                     {
-                      "disabled": false,
-                      "description": {
-                        "content": "Maximum number of results",
-                        "type": "text/plain"
+                      "id": "786925f0-5bd3-4dec-b20e-30041db6fd3a",
+                      "name": "Bad Request",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "list"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Page number",
+                                "type": "text/plain"
+                              },
+                              "key": "page",
+                              "value": "1"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                                "type": "text/plain"
+                              },
+                              "key": "sortBy",
+                              "value": "popularity"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Sort order (asc or desc)",
+                                "type": "text/plain"
+                              },
+                              "key": "order",
+                              "value": "desc"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Package ecosystem",
+                                "type": "text/plain"
+                              },
+                              "key": "ecosystem",
+                              "value": "npm"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
                       },
-                      "key": "limit",
-                      "value": "10"
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ],\n        \"key_1\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "36efa5e3-89a0-4354-8f01-3be77fdb0d40",
+                      "name": "Not Found",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "list"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Page number",
+                                "type": "text/plain"
+                              },
+                              "key": "page",
+                              "value": "1"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                                "type": "text/plain"
+                              },
+                              "key": "sortBy",
+                              "value": "popularity"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Sort order (asc or desc)",
+                                "type": "text/plain"
+                              },
+                              "key": "order",
+                              "value": "desc"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Package ecosystem",
+                                "type": "text/plain"
+                              },
+                              "key": "ecosystem",
+                              "value": "npm"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Not Found",
+                      "code": 404,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ],\n        \"key_1\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "47bf9a4d-3caa-4733-9a5f-f9a4b64e71eb",
+                      "name": "Too Many Requests",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "list"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Page number",
+                                "type": "text/plain"
+                              },
+                              "key": "page",
+                              "value": "1"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                                "type": "text/plain"
+                              },
+                              "key": "sortBy",
+                              "value": "popularity"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Sort order (asc or desc)",
+                                "type": "text/plain"
+                              },
+                              "key": "order",
+                              "value": "desc"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Package ecosystem",
+                                "type": "text/plain"
+                              },
+                              "key": "ecosystem",
+                              "value": "npm"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Too Many Requests",
+                      "code": 429,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ],\n        \"key_1\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "f3e4e711-4cf5-43fa-95a4-f6af7714e1c3",
+                      "name": "Internal Server Error",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "list"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Page number",
+                                "type": "text/plain"
+                              },
+                              "key": "page",
+                              "value": "1"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Field to sort by (e.g., name, popularity or ecosystem)",
+                                "type": "text/plain"
+                              },
+                              "key": "sortBy",
+                              "value": "popularity"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Sort order (asc or desc)",
+                                "type": "text/plain"
+                              },
+                              "key": "order",
+                              "value": "desc"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Package ecosystem",
+                                "type": "text/plain"
+                              },
+                              "key": "ecosystem",
+                              "value": "npm"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Internal Server Error",
+                      "code": 500,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"<string>\",\n      \"id\": \"<integer>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"<string>\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ],\n        \"key_1\": [\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          },\n          {\n            \"affected\": [\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              },\n              {\n                \"ecosystem\": \"<string>\",\n                \"fixed_version\": \"<string>\",\n                \"introduced_version\": \"<string>\",\n                \"last_affected_version\": \"<string>\"\n              }\n            ],\n            \"cve_id\": \"<string>\",\n            \"cvss_score\": \"<number>\",\n            \"cvss_vector\": \"<string>\",\n            \"description\": \"<string>\",\n            \"id\": \"<integer>\",\n            \"modified_at\": \"<string>\",\n            \"osv_id\": \"<string>\",\n            \"published_at\": \"<string>\",\n            \"references\": [\n              \"<string>\",\n              \"<string>\"\n            ],\n            \"severity\": \"<string>\",\n            \"summary\": \"<string>\",\n            \"withdrawn_at\": \"<string>\"\n          }\n        ]\n      },\n      \"vulnerability_counts\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
                     }
                   ],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
                   }
-                ],
-                "method": "GET",
-                "body": {},
-                "auth": null
-              },
-              "response": [
-                {
-                  "id": "cf0a88bc-5bc2-4c54-b706-5ffb3aea5aba",
-                  "name": "OK",
-                  "originalRequest": {
-                    "url": {
-                      "path": [
-                        "packages",
-                        "search"
-                      ],
-                      "host": [
-                        "{{baseUrl}}"
-                      ],
-                      "query": [
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "(Required) Package name or scoped package name",
-                            "type": "text/plain"
-                          },
-                          "key": "query",
-                          "value": "m56"
-                        },
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "Maximum number of results",
-                            "type": "text/plain"
-                          },
-                          "key": "limit",
-                          "value": "10"
-                        }
-                      ],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {}
-                  },
-                  "status": "OK",
-                  "code": 200,
-                  "header": [
-                    {
-                      "key": "Content-Type",
-                      "value": "application/json"
-                    }
-                  ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
-                  "cookie": [],
-                  "_postman_previewlanguage": "json"
-                },
-                {
-                  "id": "5d38f74f-df4c-4b2c-8d93-8100af54e80e",
-                  "name": "Bad Request",
-                  "originalRequest": {
-                    "url": {
-                      "path": [
-                        "packages",
-                        "search"
-                      ],
-                      "host": [
-                        "{{baseUrl}}"
-                      ],
-                      "query": [
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "(Required) Package name or scoped package name",
-                            "type": "text/plain"
-                          },
-                          "key": "query",
-                          "value": "m56"
-                        },
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "Maximum number of results",
-                            "type": "text/plain"
-                          },
-                          "key": "limit",
-                          "value": "10"
-                        }
-                      ],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {}
-                  },
-                  "status": "Bad Request",
-                  "code": 400,
-                  "header": [
-                    {
-                      "key": "Content-Type",
-                      "value": "application/json"
-                    }
-                  ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
-                  "cookie": [],
-                  "_postman_previewlanguage": "json"
-                },
-                {
-                  "id": "b1944dff-ed9d-4d9d-96d1-99edc00cbcb4",
-                  "name": "Too Many Requests",
-                  "originalRequest": {
-                    "url": {
-                      "path": [
-                        "packages",
-                        "search"
-                      ],
-                      "host": [
-                        "{{baseUrl}}"
-                      ],
-                      "query": [
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "(Required) Package name or scoped package name",
-                            "type": "text/plain"
-                          },
-                          "key": "query",
-                          "value": "m56"
-                        },
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "Maximum number of results",
-                            "type": "text/plain"
-                          },
-                          "key": "limit",
-                          "value": "10"
-                        }
-                      ],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {}
-                  },
-                  "status": "Too Many Requests",
-                  "code": 429,
-                  "header": [
-                    {
-                      "key": "Content-Type",
-                      "value": "application/json"
-                    }
-                  ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
-                  "cookie": [],
-                  "_postman_previewlanguage": "json"
-                },
-                {
-                  "id": "402c4b77-f812-459c-9d6e-fe7270ff4ae5",
-                  "name": "Internal Server Error",
-                  "originalRequest": {
-                    "url": {
-                      "path": [
-                        "packages",
-                        "search"
-                      ],
-                      "host": [
-                        "{{baseUrl}}"
-                      ],
-                      "query": [
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "(Required) Package name or scoped package name",
-                            "type": "text/plain"
-                          },
-                          "key": "query",
-                          "value": "m56"
-                        },
-                        {
-                          "disabled": false,
-                          "description": {
-                            "content": "Maximum number of results",
-                            "type": "text/plain"
-                          },
-                          "key": "limit",
-                          "value": "10"
-                        }
-                      ],
-                      "variable": []
-                    },
-                    "header": [
-                      {
-                        "key": "Accept",
-                        "value": "application/json"
-                      }
-                    ],
-                    "method": "GET",
-                    "body": {}
-                  },
-                  "status": "Internal Server Error",
-                  "code": 500,
-                  "header": [
-                    {
-                      "key": "Content-Type",
-                      "value": "application/json"
-                    }
-                  ],
-                  "body": "{\n  \"message\": \"<string>\",\n  \"status\": 400,\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"whsq92n/z3nl-4qglt\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\",\n        \"key_2\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@n\",\n      \"popularity\": \"<integer>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\",\n        \"key_1\": \"<integer>\"\n      }\n    }\n  ]\n}",
-                  "cookie": [],
-                  "_postman_previewlanguage": "json"
                 }
-              ],
-              "event": [],
-              "protocolProfileBehavior": {
-                "disableBodyPruning": true
-              }
+              ]
+            },
+            {
+              "name": "search",
+              "description": "",
+              "item": [
+                {
+                  "id": "f31b0358-ee99-4410-8cf1-b7e1919551f1",
+                  "name": "Search packages",
+                  "request": {
+                    "name": "Search packages",
+                    "description": {
+                      "content": "Searches npm package names using prefix matching and returns the complete package documents.",
+                      "type": "text/plain"
+                    },
+                    "url": {
+                      "path": [
+                        "api",
+                        "packages",
+                        "search"
+                      ],
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "query": [
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "(Required) Package name or scoped package name",
+                            "type": "text/plain"
+                          },
+                          "key": "query",
+                          "value": "<string>"
+                        },
+                        {
+                          "disabled": false,
+                          "description": {
+                            "content": "Maximum number of results",
+                            "type": "text/plain"
+                          },
+                          "key": "limit",
+                          "value": "10"
+                        }
+                      ],
+                      "variable": []
+                    },
+                    "header": [
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "GET",
+                    "body": {},
+                    "auth": null
+                  },
+                  "response": [
+                    {
+                      "id": "633e7172-7e58-4dca-88b5-4eafca8bd4c8",
+                      "name": "OK",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "search"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "(Required) Package name or scoped package name",
+                                "type": "text/plain"
+                              },
+                              "key": "query",
+                              "value": "<string>"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "OK",
+                      "code": 200,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"ezbo5-lu/z1s2_\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@rkxm-bci\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "7aa8dc11-835d-4867-ba41-5c6f897092be",
+                      "name": "Bad Request",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "search"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "(Required) Package name or scoped package name",
+                                "type": "text/plain"
+                              },
+                              "key": "query",
+                              "value": "<string>"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Bad Request",
+                      "code": 400,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"ezbo5-lu/z1s2_\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@rkxm-bci\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "fd93fdfb-e5ed-4d33-bd9a-d789b2a00891",
+                      "name": "Too Many Requests",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "search"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "(Required) Package name or scoped package name",
+                                "type": "text/plain"
+                              },
+                              "key": "query",
+                              "value": "<string>"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Too Many Requests",
+                      "code": 429,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"ezbo5-lu/z1s2_\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@rkxm-bci\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    },
+                    {
+                      "id": "6e5bd6e8-4a83-4226-99f8-a90d083e640e",
+                      "name": "Internal Server Error",
+                      "originalRequest": {
+                        "url": {
+                          "path": [
+                            "api",
+                            "packages",
+                            "search"
+                          ],
+                          "host": [
+                            "{{baseUrl}}"
+                          ],
+                          "query": [
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "(Required) Package name or scoped package name",
+                                "type": "text/plain"
+                              },
+                              "key": "query",
+                              "value": "<string>"
+                            },
+                            {
+                              "disabled": false,
+                              "description": {
+                                "content": "Maximum number of results",
+                                "type": "text/plain"
+                              },
+                              "key": "limit",
+                              "value": "10"
+                            }
+                          ],
+                          "variable": []
+                        },
+                        "header": [
+                          {
+                            "key": "Accept",
+                            "value": "application/json"
+                          }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                      },
+                      "status": "Internal Server Error",
+                      "code": 500,
+                      "header": [
+                        {
+                          "key": "Content-Type",
+                          "value": "application/json"
+                        }
+                      ],
+                      "body": "{\n  \"documents\": [\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"ezbo5-lu/z1s2_\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    },\n    {\n      \"ecosystem\": \"npm\",\n      \"id\": \"<string>\",\n      \"is_deprecated\": \"<boolean>\",\n      \"name\": \"@rkxm-bci\",\n      \"popularity\": \"<integer>\",\n      \"slug\": \"<string>\",\n      \"vulnerabilities\": {\n        \"key_0\": \"<integer>\"\n      }\n    }\n  ],\n  \"message\": \"<string>\",\n  \"status\": \"<integer>\"\n}",
+                      "cookie": [],
+                      "_postman_previewlanguage": "json"
+                    }
+                  ],
+                  "event": [],
+                  "protocolProfileBehavior": {
+                    "disableBodyPruning": true
+                  }
+                }
+              ]
             }
           ]
         }
@@ -293,11 +809,11 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3001/api"
+      "value": "http://localhost:3001"
     }
   ],
   "info": {
-    "_postman_id": "e512c13b-1ca1-4f75-9aaf-0cb3f769f0e7",
+    "_postman_id": "4a589349-af1f-415b-ba0b-34fdae8c3d65",
     "name": "TrustPkg API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": {

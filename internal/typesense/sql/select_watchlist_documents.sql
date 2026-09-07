@@ -1,5 +1,5 @@
 WITH selected AS (
-    SELECT p.id, p.name, p.ecosystem, d.popularity, d.is_deprecated
+    SELECT p.id, p.name, p.slug, p.ecosystem, d.popularity, d.is_deprecated
     FROM packages p
     JOIN packages_data d ON d.package_id = p.id
     WHERE p.ecosystem = 'npm'
@@ -21,7 +21,7 @@ WITH selected AS (
     FROM vulnerability_counts
     GROUP BY package_id
 )
-SELECT s.id::text, s.name, s.ecosystem, s.popularity, s.is_deprecated,
+SELECT s.id::text, s.name, s.slug, s.ecosystem, s.popularity, s.is_deprecated,
        COALESCE(vj.vulnerabilities, '{}'::jsonb)
 FROM selected s
 LEFT JOIN vulnerability_json vj ON vj.package_id = s.id

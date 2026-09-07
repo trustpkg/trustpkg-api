@@ -67,6 +67,21 @@ collector takes packages from the pending work queue, downloads the required pac
 registry, and writes the results to PostgreSQL. Keeping replication and package collection as separate
 jobs prevents a large upstream batch from blocking the rest of the service.
 
+### Reindex package slugs in Typesense
+
+After adding the `slug` field to an existing Typesense collection, run the standalone resumable
+reindex command. It uses a separate checkpoint and does not change the normal Typesense pipeline
+state:
+
+```bash
+make reindex-package-slugs ARGS='-batch-size 128 -pause 250ms'
+```
+
+The default checkpoint is `tmp/typesense-packages-slug-reindex.json`. If the command is interrupted,
+run the same command again to continue. Delete the checkpoint, or pass `-reset`, only to start the
+reindex from the beginning. The normal replicator may remain running because both operations use
+idempotent upserts.
+
 The OSV pipeline connects to the OSV data service for vulnerability feeds. It imports the complete
 ecosystem dump when an ecosystem is initialized, then uses the incremental feed for later updates.
 Changed vulnerability IDs are placed in Redis and processed one record per callback before being stored
