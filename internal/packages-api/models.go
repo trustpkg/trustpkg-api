@@ -33,6 +33,12 @@ type Response[T any] struct {
 	Documents []T    `json:"documents,omitempty"`
 }
 
+type PaginatedResponse[T any] struct {
+	Response[T]
+	LastPage   int `json:"lastPage"`
+	TotalPages int `json:"totalPages,omitempty"`
+}
+
 type SearchResponse struct {
 	Status    int              `json:"status"`
 	Message   string           `json:"message"`
@@ -40,9 +46,11 @@ type SearchResponse struct {
 }
 
 type ListResponse struct {
-	Status    int                   `json:"status"`
-	Message   string                `json:"message"`
-	Documents []PackageListDocument `json:"documents,omitempty"`
+	Status     int                   `json:"status"`
+	Message    string                `json:"message"`
+	LastPage   int                   `json:"lastPage"`
+	TotalPages int                   `json:"totalPages"`
+	Documents  []PackageListDocument `json:"documents,omitempty"`
 }
 
 type SearchDocument struct {
@@ -62,8 +70,19 @@ type PackageListDocument struct {
 	Ecosystem           string                     `json:"ecosystem"`
 	Popularity          int64                      `json:"popularity"`
 	IsDeprecated        bool                       `json:"is_deprecated"`
-	VulnerabilityCounts map[string]int             `json:"vulnerability_counts"`
-	Vulnerabilities     map[string][]Vulnerability `json:"vulnerabilities"`
+	VulnerabilityCounts map[string]int             `json:"vulnerability_counts,omitempty"`
+	Vulnerabilities     map[string][]Vulnerability `json:"vulnerabilities,omitempty"`
+	CurrentStatuses     *[]PackageCurrentStatus    `json:"current_statuses,omitempty"`
+}
+
+type PackageCurrentStatus struct {
+	Code          string            `json:"code"`
+	Label         string            `json:"label"`
+	OSVID         string            `json:"osv_id"`
+	CVEID         *string           `json:"cve_id"`
+	Severity      *string           `json:"severity"`
+	Affected      []AffectedPackage `json:"affected"`
+	FixedVersions []string          `json:"fixed_versions"`
 }
 
 type Vulnerability struct {
@@ -90,11 +109,14 @@ type AffectedPackage struct {
 }
 
 type ListParams struct {
-	Limit     int
-	Page      int
-	SortBy    string
-	Order     string
-	Ecosystem string
+	Limit                   int
+	Page                    int
+	SortBy                  string
+	Order                   string
+	Ecosystem               string
+	WithCurrentStatus       bool
+	OnlyWithVulnerabilities bool
+	VulnerabilityMonths     int
 }
 
 func (params *ListParams) validate() error {
@@ -104,14 +126,19 @@ func (params *ListParams) validate() error {
 		validation.Field(&params.SortBy, validation.In("name", "popularity", "ecosystem")),
 		validation.Field(&params.Order, validation.In("asc", "desc")),
 		validation.Field(&params.Ecosystem, validation.In("npm")),
+		validation.Field(&params.VulnerabilityMonths, validation.Min(0), validation.Max(12)),
 	)
 }
 
 type dbSelectPackagesPayload struct {
-	ctx       context.Context
-	page      int
-	limit     int
-	sortBy    string
-	order     string
-	ecosystem string
+	ctx                     context.Context
+	page                    int
+	limit                   int
+	sortBy                  string
+	order                   string
+	ecosystem               string
+	withCurrentStatus       bool
+	includeVulnerabilities  bool
+	onlyWithVulnerabilities bool
+	vulnerabilityMonths     int
 }

@@ -8,20 +8,20 @@ WITH selected AS (
     LIMIT $2
 ), vulnerability_counts AS (
     SELECT a.package_id,
-           to_char(date_trunc('month', COALESCE(v.modified_at, v.published_at)), 'YYYY-MM') AS month,
+           date_trunc('month', COALESCE(v.published_at, v.modified_at)) AS vulnerability_month,
            count(DISTINCT v.id)::int AS vulnerability_count
     FROM vulnerability_affected a
     JOIN vulnerabilities v ON v.id = a.vulnerability_id
     JOIN selected s ON s.id = a.package_id
-    WHERE COALESCE(v.modified_at, v.published_at) >= date_trunc('month', CURRENT_DATE) - INTERVAL '11 months'
-    GROUP BY a.package_id, date_trunc('month', COALESCE(v.modified_at, v.published_at))
+    GROUP BY a.package_id, date_trunc('month', COALESCE(v.published_at, v.modified_at))
 ), vulnerability_json AS (
-    SELECT package_id, jsonb_object_agg(month, vulnerability_count) AS vulnerabilities
+    SELECT package_id,
+           jsonb_object_agg(to_char(vulnerability_month, 'YYYY-MM'), vulnerability_count) AS vulnerabilities
     FROM vulnerability_counts
     GROUP BY package_id
 )
 SELECT s.id::text, s.name, s.slug, s.ecosystem, s.popularity, s.is_deprecated,
-       COALESCE(vj.vulnerabilities, '{}'::jsonb)
+    COALESCE(vj.vulnerabilities, '{}'::jsonb)
 FROM selected s
 LEFT JOIN vulnerability_json vj ON vj.package_id = s.id
 ORDER BY s.id;

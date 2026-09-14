@@ -2,6 +2,7 @@ package packagesApi
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"strings"
 
@@ -88,13 +89,14 @@ func (handlers *handlers) search(ctx fiber.Ctx) error {
 	queryBy := "name"
 	prefix := "true"
 	includeFields := "id,name,slug,ecosystem,popularity,is_deprecated,vulnerabilities"
-	searchResult, err := handlers.typesenseClient.SearchDocuments(typesense.PackagesCollection, &api.SearchCollectionParams{
+	searchCollectionParams := &api.SearchCollectionParams{
 		Q:             &queryParams,
 		PerPage:       &limit,
 		QueryBy:       &queryBy,
 		Prefix:        &prefix,
 		IncludeFields: &includeFields,
-	})
+	}
+	searchResult, err := handlers.typesenseClient.SearchDocuments(typesense.PackagesCollection, searchCollectionParams)
 	if err != nil {
 		return searchRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
 	}
@@ -139,6 +141,10 @@ func (handlers *handlers) search(ctx fiber.Ctx) error {
 // @Param sortBy query string false "Field to sort by (e.g., name, popularity or ecosystem)" default(popularity)
 // @Param order query string false "Sort order (asc or desc)" default(desc)
 // @Param ecosystem query string false "Package ecosystem" default(npm)
+// @Param includeVulnerabilities query bool false "Include full vulnerability details" default(false)
+// @Param onlyWithVulnerabilities query bool false "Only return packages with vulnerabilities" default(false)
+// @Param vulnerabilityMonths query int false "Limit vulnerabilities to the last N months (0 for all available months, 1-12 for a window)" minimum(0) maximum(12) default(0)
+// @Param withCurrentStatus query bool false "Include current vulnerability status details" default(false)
 // @Success 200 {object} packagesApi.ListResponse
 // @Failure 400 {object} packagesApi.ListResponse
 // @Failure 404 {object} packagesApi.ListResponse
@@ -147,57 +153,92 @@ func (handlers *handlers) search(ctx fiber.Ctx) error {
 // @Router /api/packages/list [get]
 func (handlers *handlers) list(ctx fiber.Ctx) error {
 	ctx.Set("Access-Control-Allow-Origin", "*")
+	pageParam := 1
 
 	for key := range ctx.Request().Header.All() {
 		if !isAllowedSearchHeader(string(key)) {
-			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
 		}
 	}
 
 	allowed, err := handlers.listRateLimiter.Allow(ctx)
 	if err != nil {
-		return listRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
+		return listRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, pageParam, nil)
 	}
 	if !allowed {
-		return listRespond(ctx, fiber.StatusTooManyRequests, toManyRequest, nil)
+		return listRespond(ctx, fiber.StatusTooManyRequests, toManyRequest, pageParam, nil)
 	}
 
 	queryArgs := ctx.Request().URI().QueryArgs()
 	invalidQueryParameter := false
 	for key := range queryArgs.All() {
 		switch string(key) {
-		case "limit", "page", "sortBy", "order", "ecosystem":
+		case "limit", "page", "sortBy", "order", "ecosystem", "includeVulnerabilities", "onlyWithVulnerabilities", "vulnerabilityMonths", "withCurrentStatus":
 			continue
 		default:
 			invalidQueryParameter = true
 		}
 	}
 	if invalidQueryParameter {
-		return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+		return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
 	}
 
 	limitParam := 10
 	if queryArgs.Has("limit") {
 		limitParam, err = strconv.Atoi(string(queryArgs.Peek("limit")))
 		if err != nil {
-			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
 		}
 	}
 
-	pageParam := 1
 	if queryArgs.Has("page") {
 		pageParam, err = strconv.Atoi(string(queryArgs.Peek("page")))
 		if err != nil {
-			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
+		}
+	}
+
+	includeVulnerabilities := false
+	if queryArgs.Has("includeVulnerabilities") {
+		includeVulnerabilities, err = strconv.ParseBool(string(queryArgs.Peek("includeVulnerabilities")))
+		if err != nil {
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
+		}
+	}
+
+	onlyWithVulnerabilities := false
+	if queryArgs.Has("onlyWithVulnerabilities") {
+		onlyWithVulnerabilities, err = strconv.ParseBool(string(queryArgs.Peek("onlyWithVulnerabilities")))
+		if err != nil {
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
+		}
+	}
+
+	vulnerabilityMonths := 0
+	if queryArgs.Has("vulnerabilityMonths") {
+		vulnerabilityMonths, err = strconv.Atoi(string(queryArgs.Peek("vulnerabilityMonths")))
+		if err != nil || vulnerabilityMonths < 0 || vulnerabilityMonths > 12 {
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
+		}
+	}
+
+	withCurrentStatus := false
+	if queryArgs.Has("withCurrentStatus") {
+		withCurrentStatus, err = strconv.ParseBool(string(queryArgs.Peek("withCurrentStatus")))
+		if err != nil {
+			return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
 		}
 	}
 
 	listParams := ListParams{
-		Limit:     limitParam,
-		Page:      pageParam,
-		SortBy:    string(queryArgs.Peek("sortBy")),
-		Order:     string(queryArgs.Peek("order")),
-		Ecosystem: string(queryArgs.Peek("ecosystem")),
+		Limit:                   limitParam,
+		Page:                    pageParam,
+		SortBy:                  string(queryArgs.Peek("sortBy")),
+		Order:                   string(queryArgs.Peek("order")),
+		Ecosystem:               string(queryArgs.Peek("ecosystem")),
+		WithCurrentStatus:       withCurrentStatus,
+		OnlyWithVulnerabilities: onlyWithVulnerabilities,
+		VulnerabilityMonths:     vulnerabilityMonths,
 	}
 	if listParams.SortBy == "" {
 		listParams.SortBy = "popularity"
@@ -209,27 +250,39 @@ func (handlers *handlers) list(ctx fiber.Ctx) error {
 		listParams.Ecosystem = "npm"
 	}
 	if err := listParams.validate(); err != nil {
-		return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+		return listRespond(ctx, fiber.StatusBadRequest, badRequestMessage, pageParam, nil)
 	}
 
-	list, err := dbSelectPackages(dbSelectPackagesPayload{
-		ctx:       ctx.Context(),
-		page:      listParams.Page,
-		limit:     listParams.Limit,
-		sortBy:    listParams.SortBy,
-		order:     listParams.Order,
-		ecosystem: listParams.Ecosystem,
-	})
+	dbPayload := dbSelectPackagesPayload{
+		ctx:                     ctx.Context(),
+		page:                    listParams.Page,
+		limit:                   listParams.Limit,
+		sortBy:                  listParams.SortBy,
+		order:                   listParams.Order,
+		ecosystem:               listParams.Ecosystem,
+		withCurrentStatus:       listParams.WithCurrentStatus,
+		includeVulnerabilities:  includeVulnerabilities,
+		onlyWithVulnerabilities: listParams.OnlyWithVulnerabilities,
+		vulnerabilityMonths:     listParams.VulnerabilityMonths,
+	}
+	totalPackages, err := dbCountPackages(dbPayload)
 	if err != nil {
+		log.Printf("[PACKAGES] count list query failed: %v", err)
+		return listRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, pageParam, nil)
+	}
+
+	list, err := dbSelectPackages(dbPayload)
+	if err != nil {
+		log.Printf("[PACKAGES] select list query failed: %v", err)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return listRespond(ctx, fiber.StatusNotFound, successNotFoundMessage, nil)
+			return listRespond(ctx, fiber.StatusNotFound, successNotFoundMessage, pageParam, nil)
 		}
 
-		return listRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
+		return listRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, pageParam, nil)
 	}
 	if len(list) == 0 {
-		return listRespond(ctx, fiber.StatusNotFound, successNotFoundMessage, nil)
+		return listRespond(ctx, fiber.StatusNotFound, successNotFoundMessage, pageParam, nil)
 	}
 
-	return listRespond(ctx, fiber.StatusOK, successMessage, list)
+	return listRespond(ctx, fiber.StatusOK, successMessage, pageParam, list, calculateTotalPages(totalPackages, listParams.Limit))
 }

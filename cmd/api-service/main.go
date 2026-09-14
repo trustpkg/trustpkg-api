@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 
 	"github.com/trustpkg/trustpkg-api/db"
 	apiDocs "github.com/trustpkg/trustpkg-api/internal/api-docs"
+	packagesApi "github.com/trustpkg/trustpkg-api/internal/packages-api"
 	"github.com/trustpkg/trustpkg-api/internal/router"
 	"github.com/trustpkg/trustpkg-api/internal/typesense"
 
@@ -13,7 +15,7 @@ import (
 )
 
 // @title TrustPkg API
-// @version 1.4.2
+// @version 1.5.0
 // @description API for searching npm packages and their vulnerability data.
 // @BasePath /api
 // @schemes http https
@@ -22,6 +24,12 @@ func main() {
 
 	db.ConnectDb()
 	db.ConnectRedis(ctx)
+	if err := packagesApi.WarmPackageListCountCache(ctx, "npm"); err != nil {
+		log.Printf("[PACKAGES] count cache warm-up failed: %v", err)
+	}
+	if err := packagesApi.WarmPackageListVulnerabilityCountCache(ctx, "npm"); err != nil {
+		log.Printf("[PACKAGES] vulnerability count cache warm-up failed: %v", err)
+	}
 	typesenseClient := typesense.NewInstance(ctx)
 
 	app := fiber.New()
