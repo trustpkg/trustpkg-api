@@ -1,8 +1,11 @@
 package packagesApi
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -16,6 +19,7 @@ type handlers struct {
 	typesenseClient   *typesense.Controller
 	searchRateLimiter RateLimiter
 	listRateLimiter   RateLimiter
+	detailRateLimiter RateLimiter
 }
 
 func newHandlers(typesenseClient *typesense.Controller, rateLimits InitRateLimitingConfig) *handlers {
@@ -23,6 +27,7 @@ func newHandlers(typesenseClient *typesense.Controller, rateLimits InitRateLimit
 		typesenseClient:   typesenseClient,
 		searchRateLimiter: NewIPRateLimiter(rateLimits.Search),
 		listRateLimiter:   NewIPRateLimiter(rateLimits.List),
+		detailRateLimiter: NewIPRateLimiter(rateLimits.Detail),
 	}
 }
 
@@ -285,4 +290,79 @@ func (handlers *handlers) list(ctx fiber.Ctx) error {
 	}
 
 	return listRespond(ctx, fiber.StatusOK, successMessage, pageParam, list, calculateTotalPages(totalPackages, listParams.Limit))
+}
+
+// packageDetail godoc
+// @Summary Get a single package
+// @Description Get a single package by slug or exact name (scoped names: /api/packages/@scope/name) with optional vulnerability details selected in the JSON request body (query parameters are not accepted).
+// @Tags packages
+// @ID getPackage
+// @Accept json
+// @Produce json
+// @Param name path string true "Package slug or name"
+// @Param request body packagesApi.PackageDetailRequest false "Optional detail options; an empty body returns the base package data"
+// @Success 200 {object} packagesApi.PackageDetailResponse
+// @Failure 400 {object} packagesApi.PackageDetailResponse
+// @Failure 404 {object} packagesApi.PackageDetailResponse
+// @Failure 429 {object} packagesApi.PackageDetailResponse
+// @Failure 500 {object} packagesApi.PackageDetailResponse
+// @Router /api/packages/{name} [post]
+func (handlers *handlers) detail(ctx fiber.Ctx) error {
+	ctx.Set("Access-Control-Allow-Origin", "*")
+
+	for key := range ctx.Request().Header.All() {
+		if !isAllowedSearchHeader(string(key)) {
+			return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+		}
+	}
+
+	allowed, err := handlers.detailRateLimiter.Allow(ctx)
+	if err != nil {
+		return packageDetailRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
+	}
+	if !allowed {
+		return packageDetailRespond(ctx, fiber.StatusTooManyRequests, toManyRequest, nil)
+	}
+
+	if ctx.Request().URI().QueryArgs().Len() > 0 {
+		return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+	}
+
+	var request PackageDetailRequest
+	rawBody := ctx.Body()
+	if len(rawBody) > packageDetailMaxBodyBytes {
+		return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+	}
+	if len(bytes.TrimSpace(rawBody)) > 0 {
+		decoder := json.NewDecoder(bytes.NewReader(rawBody))
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&request); err != nil || decoder.More() {
+			return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+		}
+	}
+
+	identifier := ctx.Params("name")
+	if scope := ctx.Params("scope"); scope != "" {
+		identifier = scope + "/" + identifier
+	}
+	if strings.Contains(identifier, "%") {
+		decoded, err := url.PathUnescape(identifier)
+		if err != nil {
+			return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+		}
+		identifier = decoded
+	}
+
+	params := request.params(identifier)
+	if err := params.validate(); err != nil {
+		return packageDetailRespond(ctx, fiber.StatusBadRequest, badRequestMessage, nil)
+	}
+
+	status, body, err := dbGetPackageDetailResponse(ctx.Context(), params)
+	if err != nil {
+		log.Printf("[PACKAGES] select package query failed: %v", err)
+		return packageDetailRespond(ctx, fiber.StatusInternalServerError, internalErrorMessage, nil)
+	}
+
+	return packageDetailRespondRaw(ctx, status, body)
 }

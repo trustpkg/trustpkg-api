@@ -8,6 +8,7 @@ import (
 type InitRateLimitingConfig struct {
 	Search RateLimitConfig
 	List   RateLimitConfig
+	Detail RateLimitConfig
 }
 
 func RegisterRoutes(app fiber.Router, typesenseClient *typesense.Controller) {
@@ -22,6 +23,11 @@ func RegisterRoutes(app fiber.Router, typesenseClient *typesense.Controller) {
 			RequestsPerWindow: DefaultRequestsPerWindow,
 			RequestWindow:     DefaultRequestWindow,
 		},
+		Detail: RateLimitConfig{
+			Key:               "packages-detail",
+			RequestsPerWindow: DefaultRequestsPerWindow,
+			RequestWindow:     DefaultRequestWindow,
+		},
 	})
 }
 
@@ -31,4 +37,6 @@ func RegisterRoutesWithRateLimits(app fiber.Router, typesenseClient *typesense.C
 
 	packages.Get("/search", handlers.search)
 	packages.Get("/list", handlers.list)
+	packages.Post("/:name", handlers.detail)
+	packages.Post("/:scope/:name", handlers.detail)
 }

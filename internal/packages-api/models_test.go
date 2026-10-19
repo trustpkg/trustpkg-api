@@ -1,6 +1,9 @@
 package packagesApi
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestSearchParamsValidateAllowsSurroundingWhitespace(t *testing.T) {
 	params := SearchParams{Query: " error ", Limit: 10}
@@ -47,6 +50,40 @@ func TestCalculateTotalPages(t *testing.T) {
 	for _, test := range tests {
 		if actual := calculateTotalPages(test.totalPackages, test.limit); actual != test.expected {
 			t.Fatalf("expected %d pages for %d packages with limit %d, got %d", test.expected, test.totalPackages, test.limit, actual)
+		}
+	}
+}
+
+func TestPackageDetailParamsValidate(t *testing.T) {
+	bad := []string{"", "a b", "../x", "a'; drop", "@a/b/c"}
+	for _, id := range bad {
+		p := PackageDetailParams{Identifier: id, Ecosystem: "npm"}
+		if p.validate() == nil {
+			t.Fatalf("%q should be invalid", id)
+		}
+	}
+	for _, id := range []string{"lodash", "@types/node", "lodash.get"} {
+		p := PackageDetailParams{Identifier: id, Ecosystem: "npm"}
+		if err := p.validate(); err != nil {
+			t.Fatalf("%q: %v", id, err)
+		}
+	}
+}
+
+func TestPackageDetailRequestDecoding(t *testing.T) {
+	var request PackageDetailRequest
+	body := `{"includeVulnerabilities":true,"vulnerabilityMonths":"all","severity":"high"}`
+	if err := json.Unmarshal([]byte(body), &request); err != nil {
+		t.Fatal(err)
+	}
+	params := request.params("lodash")
+	if !params.IncludeVulnerabilities || params.VulnerabilityMonths != 0 || params.Severity != "HIGH" || params.Ecosystem != "npm" {
+		t.Fatalf("unexpected params: %+v", params)
+	}
+
+	for _, invalid := range []string{`{"vulnerabilityMonths":13}`, `{"vulnerabilityMonths":"x"}`, `{"vulnerabilityMonths":-1}`} {
+		if json.Unmarshal([]byte(invalid), &PackageDetailRequest{}) == nil {
+			t.Fatalf("%s should be invalid", invalid)
 		}
 	}
 }

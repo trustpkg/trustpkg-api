@@ -4,10 +4,14 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/gofiber/fiber/v3"
+	"github.com/jackc/pgx/v5"
 	"github.com/trustpkg/trustpkg-api/db"
 )
 
@@ -20,9 +24,25 @@ var (
 	querySelectPackagesVulnerabilities string
 	//go:embed sql/select_packages_current_status.sql
 	querySelectPackagesCurrentStatus string
+	//go:embed sql/select_package.sql
+	querySelectPackage string
+	//go:embed sql/package_cte_vulnerabilities.sql
+	queryPackageCTEVulnerabilities string
+	//go:embed sql/package_column_summary.sql
+	queryPackageColumnSummary string
+	//go:embed sql/package_column_vulnerabilities.sql
+	queryPackageColumnVulnerabilities string
+	//go:embed sql/package_column_current_status.sql
+	queryPackageColumnCurrentStatus string
+	//go:embed sql/package_join_vulnerabilities.sql
+	queryPackageJoinVulnerabilities string
 )
 
-const packageCountCacheTTL = 5 * time.Minute
+const (
+	packageCountCacheTTL          = 5 * time.Minute
+	packageDetailCacheTTL         = 60 * time.Second
+	packageDetailNotFoundCacheTTL = 30 * time.Second
+)
 
 func WarmPackageListCountCache(ctx context.Context, ecosystem string) error {
 	_, err := dbCountPackages(dbSelectPackagesPayload{
@@ -271,4 +291,135 @@ func resultPackageOrder(sortBy string, order string) string {
 	default:
 		return "s.ecosystem DESC, s.id ASC"
 	}
+}
+
+func buildPackageDetailQuery(params PackageDetailParams) (string, []any) {
+	args := make([]any, 0, 6)
+	bind := func(value any) string {
+		args = append(args, value)
+		return "$" + strconv.Itoa(len(args))
+	}
+
+	ecosystem := bind(params.Ecosystem)
+	identifier := bind(params.Identifier)
+
+	ctes := ""
+	columns := ""
+	joins := ""
+
+	if params.needsVulnerabilityData() {
+		filters := ""
+		if !params.IncludeWithdrawn {
+			filters += "\n\tAND v.withdrawn_at IS NULL"
+		}
+		if params.Severity != "" {
+			filters += "\n\tAND UPPER(v.severity) = " + bind(params.Severity)
+		}
+		if params.VulnerabilityMonths > 0 {
+			filters += "\n\tAND COALESCE(v.published_at, v.modified_at) >= date_trunc('month', CURRENT_DATE) - ((" +
+				bind(params.VulnerabilityMonths) + "::int - 1) * INTERVAL '1 month')"
+		}
+		descriptionColumn := "NULL::TEXT"
+		if params.IncludeDescription {
+			descriptionColumn = "v.description"
+		}
+		ctes = strings.NewReplacer(
+			"/*DESCRIPTION_COLUMN*/", descriptionColumn,
+			"/*VULNERABILITY_FILTERS*/", filters,
+		).Replace(queryPackageCTEVulnerabilities)
+	}
+
+	if params.WithSummary {
+		columns += queryPackageColumnSummary
+	}
+	if params.WithCurrentStatus {
+		columns += queryPackageColumnCurrentStatus
+	}
+	if params.IncludeVulnerabilities {
+		columns += queryPackageColumnVulnerabilities
+		references := "'[]'::jsonb"
+		if params.IncludeReferences {
+			references = `COALESCE((
+						SELECT jsonb_agg(reference.url ORDER BY reference.id)
+						FROM vulnerability_references AS reference
+						WHERE reference.vulnerability_id = vul.id
+					), '[]'::jsonb)`
+		}
+		joins = strings.Replace(queryPackageJoinVulnerabilities, "/*REFERENCES*/", references, 1)
+	}
+
+	query := strings.NewReplacer(
+		"/*ECOSYSTEM*/", ecosystem,
+		"/*IDENTIFIER*/", identifier,
+		"/*CTES*/", ctes,
+		"/*COLUMNS*/", columns,
+		"/*JOINS*/", joins,
+	).Replace(querySelectPackage)
+
+	return query, args
+}
+
+func dbSelectPackage(ctx context.Context, params PackageDetailParams) (*PackageDetailDocument, error) {
+	if db.Pool == nil {
+		return nil, fmt.Errorf("Postgres pool is not initialized")
+	}
+
+	query, args := buildPackageDetailQuery(params)
+	var document PackageDetailDocument
+	targets := []any{
+		&document.ID,
+		&document.Name,
+		&document.Slug,
+		&document.Ecosystem,
+		&document.Popularity,
+		&document.IsDeprecated,
+	}
+	if params.WithSummary {
+		targets = append(targets, &document.Summary)
+	}
+	if params.WithCurrentStatus {
+		targets = append(targets, &document.CurrentStatuses)
+	}
+	if params.IncludeVulnerabilities {
+		targets = append(targets, &document.VulnerabilityCounts, &document.Vulnerabilities)
+	}
+
+	if err := db.Pool.QueryRow(ctx, query, args...).Scan(targets...); err != nil {
+		return nil, err
+	}
+
+	return &document, nil
+}
+
+func dbGetPackageDetailResponse(ctx context.Context, params PackageDetailParams) (int, []byte, error) {
+	cacheKey := params.cacheKey()
+	if db.Redis != nil {
+		if cached, err := db.Redis.Get(ctx, cacheKey).Bytes(); err == nil && len(cached) > 1 {
+			if cached[0] == '0' {
+				return fiber.StatusNotFound, cached[1:], nil
+			}
+			return fiber.StatusOK, cached[1:], nil
+		}
+	}
+
+	document, err := dbSelectPackage(ctx, params)
+	status, ttl, marker := fiber.StatusOK, packageDetailCacheTTL, byte('1')
+	response := PackageDetailResponse{Status: fiber.StatusOK, Message: successMessage, Document: document}
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return 0, nil, err
+		}
+		status, ttl, marker = fiber.StatusNotFound, packageDetailNotFoundCacheTTL, '0'
+		response = PackageDetailResponse{Status: fiber.StatusNotFound, Message: successNotFoundMessage}
+	}
+
+	body, err := json.Marshal(response)
+	if err != nil {
+		return 0, nil, err
+	}
+	if db.Redis != nil {
+		_ = db.Redis.Set(ctx, cacheKey, append([]byte{marker}, body...), ttl).Err()
+	}
+
+	return status, body, nil
 }

@@ -81,3 +81,12 @@ func calculateTotalPages(totalPackages int64, limit int) int {
 func rateLimitKey(keyPrefix string, clientIP string, window int64) string {
 	return fmt.Sprintf("packages-api:%s:rate:%s:%d", keyPrefix, clientIP, window)
 }
+
+func packageDetailRespond(ctx fiber.Ctx, status int, message string, document *PackageDetailDocument) error {
+	return ctx.Status(status).JSON(PackageDetailResponse{Status: status, Message: message, Document: document})
+}
+
+func packageDetailRespondRaw(ctx fiber.Ctx, status int, body []byte) error {
+	ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
+	return ctx.Status(status).Send(body)
+}
