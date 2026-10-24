@@ -1,0 +1,21 @@
+name: Security
+
+on:
+  workflow_call:
+
+jobs:
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-26.04
+
+    steps:
+      - name: Gather repository
+        uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript
+
+      - name: Analyze CodeQL
+        uses: github/codeql-action/analyze@v4

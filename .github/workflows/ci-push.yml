@@ -1,0 +1,22 @@
+name: CI push
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+
+jobs:
+  code-check:
+    uses: ./.github/workflows/code-check.yml
+
+  build-image:
+    needs: [code-check]
+    uses: ./.github/workflows/build-image.yml
+    with:
+      beta: false
+    permissions:
+      contents: read
+      packages: write
