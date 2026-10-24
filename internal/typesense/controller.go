@@ -19,6 +19,47 @@ func (controller *Controller) CreateCollection(collection *CollectionPayload) er
 	return err
 }
 
+func (controller *Controller) UpdateCollection(collection *CollectionPayload) error {
+	if collection == nil || collection.Collection == nil {
+		return fmt.Errorf("Typesense collection update payload cannot be nil")
+	}
+
+	current, err := controller.client.Collection(collection.Name).Retrieve(controller.ctx)
+	if err != nil {
+		return err
+	}
+
+	existingFields := make(map[string]api.Field, len(current.Fields))
+	for _, field := range current.Fields {
+		existingFields[field.Name] = field
+	}
+
+	missingFields := make([]api.Field, 0, len(collection.Collection.Fields))
+	for _, field := range collection.Collection.Fields {
+		if field.Name == "id" {
+			continue
+		}
+		existingField, exists := existingFields[field.Name]
+		if !exists {
+			fieldToAdd := field
+			fieldToAdd.Optional = pointer.True()
+			missingFields = append(missingFields, fieldToAdd)
+			continue
+		}
+		if existingField.Type != field.Type {
+			return fmt.Errorf("Typesense collection field %q has type %q, expected %q", field.Name, existingField.Type, field.Type)
+		}
+	}
+	if len(missingFields) == 0 {
+		return nil
+	}
+
+	_, err = controller.client.Collection(collection.Name).Update(controller.ctx, &api.CollectionUpdateSchema{
+		Fields: missingFields,
+	})
+	return err
+}
+
 func (controller *Controller) UpsertDocuments(collection *UpsertPayload) error {
 	if collection == nil {
 		return fmt.Errorf("Typesense upsert payload cannot be nil")

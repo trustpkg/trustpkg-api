@@ -2,6 +2,7 @@ package packagesApi
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/gofiber/fiber/v3"
 )
@@ -40,10 +41,52 @@ func intMap(values map[string]any) map[string]int {
 	return result
 }
 
-func respond(ctx fiber.Ctx, status int, message string, documents []SearchDocument) error {
-	return ctx.Status(status).JSON(SearchResponse{
+func respond[T any](ctx fiber.Ctx, status int, message string, documents []T, pageInfo ...int) error {
+	response := Response[T]{
 		Status:    status,
 		Message:   message,
 		Documents: documents,
-	})
+	}
+	if len(pageInfo) == 0 {
+		return ctx.Status(status).JSON(response)
+	}
+
+	paginatedResponse := PaginatedResponse[T]{
+		Response: response,
+		LastPage: pageInfo[0],
+	}
+	if len(pageInfo) > 1 {
+		paginatedResponse.TotalPages = pageInfo[1]
+	}
+
+	return ctx.Status(status).JSON(paginatedResponse)
+}
+
+func searchRespond(ctx fiber.Ctx, status int, message string, documents []SearchDocument) error {
+	return respond(ctx, status, message, documents)
+}
+
+func listRespond(ctx fiber.Ctx, status int, message string, lastPage int, documents []PackageListDocument, totalPages ...int) error {
+	return respond(ctx, status, message, documents, append([]int{lastPage}, totalPages...)...)
+}
+
+func calculateTotalPages(totalPackages int64, limit int) int {
+	if totalPackages == 0 {
+		return 0
+	}
+
+	return int((totalPackages + int64(limit) - 1) / int64(limit))
+}
+
+func rateLimitKey(keyPrefix string, clientIP string, window int64) string {
+	return fmt.Sprintf("packages-api:%s:rate:%s:%d", keyPrefix, clientIP, window)
+}
+
+func packageDetailRespond(ctx fiber.Ctx, status int, message string, document *PackageDetailDocument) error {
+	return ctx.Status(status).JSON(PackageDetailResponse{Status: status, Message: message, Document: document})
+}
+
+func packageDetailRespondRaw(ctx fiber.Ctx, status int, body []byte) error {
+	ctx.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
+	return ctx.Status(status).Send(body)
 }

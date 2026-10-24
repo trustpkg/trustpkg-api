@@ -44,7 +44,7 @@ func main() {
 				npm.LogCollectorError(err)
 			}
 		},
-		SkippedCycles: 4,
+		SkippedCycles: 2,
 	})
 
 	worker.ScheduleJob(adaptiveWorker.Job{

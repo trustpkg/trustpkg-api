@@ -23,6 +23,8 @@ var (
 	querySelectWatchlistDocuments string
 	//go:embed sql/select_database_documents.sql
 	querySelectDatabaseDocuments string
+	//go:embed sql/select_slug_reindex_documents.sql
+	querySelectSlugReindexDocuments string
 	//go:embed sql/clear_packages_need_update.sql
 	queryClearPackagesNeedUpdate string
 )
@@ -91,6 +93,15 @@ func dbSelectDatabaseDocuments(ctx context.Context, lastID int64, limit int) ([]
 	return dbScanPackageDocuments(rows)
 }
 
+func dbSelectSlugReindexDocuments(ctx context.Context, lastID int64, limit int) ([]packageDocument, error) {
+	rows, err := db.Pool.Query(ctx, querySelectSlugReindexDocuments, lastID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return dbScanPackageDocuments(rows)
+}
+
 func dbClearPackagesNeedUpdate(ctx context.Context, packageIDs []int64) error {
 	if len(packageIDs) == 0 {
 		return nil
@@ -105,7 +116,7 @@ func dbScanPackageDocuments(rows pgx.Rows) ([]packageDocument, error) {
 	for rows.Next() {
 		var document packageDocument
 		var vulnerabilities []byte
-		if err := rows.Scan(&document.ID, &document.Name, &document.Ecosystem, &document.Popularity, &document.IsDeprecated, &vulnerabilities); err != nil {
+		if err := rows.Scan(&document.ID, &document.Name, &document.Slug, &document.Ecosystem, &document.Popularity, &document.IsDeprecated, &vulnerabilities); err != nil {
 			return nil, err
 		}
 		document.Vulnerabilities = make(vulnerabilitiesMap)

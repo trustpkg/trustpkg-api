@@ -10,6 +10,7 @@ type vulnerabilitiesMap map[string]int
 type PackageCollectionType struct {
 	ID              string             `json:"id"`
 	Name            string             `json:"name"`
+	Slug            string             `json:"slug"`
 	Ecosystem       string             `json:"ecosystem"`
 	Popularity      int64              `json:"popularity"`
 	IsDeprecated    bool               `json:"is_deprecated"`
@@ -40,6 +41,10 @@ var PackageSchema = &typesenseApi.CollectionSchema{
 		},
 		{
 			Name: "name",
+			Type: "string",
+		},
+		{
+			Name: "slug",
 			Type: "string",
 		},
 		{
