@@ -1,77 +1,97 @@
-name: Build image
+name: Build and push images to GitHub Container Registry
 
 on:
   workflow_call:
     inputs:
-      beta:
-        description: Build a beta version (pull requests) instead of the tagged release
+      is_beta_version:
+        description: Publish the images with the beta tag
+        required: false
         type: boolean
         default: false
+    secrets:
+      TRUSTPKG_GHCR:
+        required: false
 
 jobs:
-  image:
+  push-image-to-github-registry:
     name: Image ${{ matrix.service }}
     runs-on: ubuntu-26.04
-
     permissions:
       contents: read
       packages: write
-
     strategy:
       fail-fast: false
       matrix:
         service:
           - api-service
           - replicator-service
-
+    env:
+      IS_BETA_VERSION: ${{ inputs.is_beta_version }}
+      SERVICE: ${{ matrix.service }}
     steps:
-      - name: Gather repository
+      - name: Checkout repository
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
-      - name: Resolve version
-        id: version
-        env:
-          BETA: ${{ inputs.beta }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          RUN_NUMBER: ${{ github.run_number }}
+      - name: Install Podman
         run: |
-          if [ "$BETA" = "true" ]; then
-            base=$(git describe --tags --abbrev=0 --match '[0-9]*' 2>/dev/null || echo "0.0.0")
-            echo "value=${base}-beta.pr${PR_NUMBER}.${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          sudo apt-get update
+          sudo apt-get install --yes podman
+
+      - name: Build image
+        id: image
+        shell: bash
+        run: |
+          image_name="ghcr.io/$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')/$SERVICE"
+
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            image_tags=("beta-pr-${PR_NUMBER}")
+          elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            image_tags=("$REF_NAME")
+            if [[ "$IS_BETA_VERSION" != "true" ]]; then
+              image_tags+=("latest")
+            fi
+          elif [[ "$IS_BETA_VERSION" == "true" ]]; then
+            image_tags=("beta")
           else
-            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            image_tags=("latest")
           fi
 
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v4
+          echo "name=$image_name" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags<<EOF"
+            printf '%s\n' "${image_tags[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.TRUSTPKG_GHCR }}
+          podman build \
+            --build-arg "SERVICE=$SERVICE" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --tag "$image_name:${image_tags[0]}" \
+            .
 
-      - name: Image metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ghcr.io/${{ github.repository }}/${{ matrix.service }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          tags: |
-            type=raw,value=${{ steps.version.outputs.value }}
-            type=raw,value=latest,enable=${{ !inputs.beta }}
+          for image_tag in "${image_tags[@]:1}"; do
+            podman tag "$image_name:${image_tags[0]}" "$image_name:$image_tag"
+          done
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REF_NAME: ${{ github.ref_name }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          push: true
-          build-args: SERVICE=${{ matrix.service }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ secrets.TRUSTPKG_GHCR }}
+        run: |
+          printf '%s' "$REGISTRY_PASSWORD" |
+            podman login ghcr.io --username "$REGISTRY_USERNAME" --password-stdin
+
+      - name: Push image
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_TAGS: ${{ steps.image.outputs.tags }}
+        shell: bash
+        run: |
+          while IFS= read -r image_tag; do
+            [[ -n "$image_tag" ]] && podman push "$IMAGE_NAME:$image_tag"
+          done <<< "$IMAGE_TAGS"
