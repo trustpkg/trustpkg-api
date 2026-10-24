@@ -2,6 +2,8 @@ name: CI push
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
 
@@ -9,14 +11,24 @@ permissions:
   contents: read
 
 jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
   code-check:
+    if: startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/code-check.yml
 
   build-image:
     needs: [code-check]
     uses: ./.github/workflows/build-image.yml
     with:
-      beta: false
+      is_beta_version: false
+    secrets:
+      TRUSTPKG_GHCR: ${{ secrets.TRUSTPKG_GHCR }}
     permissions:
       contents: read
       packages: write
