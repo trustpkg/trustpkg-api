@@ -15,7 +15,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version: stable
+          check-latest: true
 
       - name: Generate API docs
         run: go run github.com/swaggo/swag/cmd/swag@v1.8.1 init -g cmd/api-service/main.go --parseInternal --output docs
@@ -37,7 +38,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version: stable
+          check-latest: true
 
       - name: Generate API docs
         run: go run github.com/swaggo/swag/cmd/swag@v1.8.1 init -g cmd/api-service/main.go --parseInternal --output docs
