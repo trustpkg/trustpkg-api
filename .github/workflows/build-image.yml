@@ -25,6 +25,7 @@ jobs:
         service:
           - api-service
           - replicator-service
+          - database-service
     env:
       IS_BETA_VERSION: ${{ inputs.is_beta_version }}
       SERVICE: ${{ matrix.service }}

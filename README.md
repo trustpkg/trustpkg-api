@@ -146,11 +146,52 @@ leaving a partial history record. Generating a report reads PostgreSQL only and 
 OSV records with a `withdrawn` timestamp are retained and marked with `vulnerabilities.withdrawn_at`.
 If an ID from `modified_id.csv` returns HTTP 404, an existing local record is marked as withdrawn as well.
 
-Apply migrations before starting the service:
+To apply migrations manually:
 
 ```bash
-make migrate-up
+make database-service ARGS='migrate up'
 ```
+
+### Database service
+
+The one-shot `database-service` container manages migrations and initializes the npm OSV
+dataset without exposing HTTP endpoints. Run a local operation with:
+
+```bash
+podman exec database_service help
+make database-service
+make database-service ARGS='migrate version'
+make database-service ARGS='migrate up'
+make database-service ARGS='migrate down'
+make database-service ARGS='migrate force 13'
+make database-service ARGS='first-init'
+```
+
+With no arguments, the service runs its startup handler: it checks for pending migrations, applies
+them, then checks whether the initial npm OSV import is needed and runs it when necessary. Explicit
+CLI commands perform only the requested operation, so `migrate down` and `migrate force` are not
+preceded by automatic migrations. `migrate version` reports the current migration and whether the
+database is dirty. `migrate down` reverts all applied migrations, while `migrate force <version>`
+sets the migration version without running SQL. `first-init` applies pending migrations and then
+runs the existing npm OSV replication flow; a database without OSV replication state receives the
+full initial import. The first-init action does not require Redis.
+The `help` command prints usage without connecting to PostgreSQL.
+Its descriptions explain the effects and risks of each operation; in particular, `migrate down`
+runs every down migration and may delete schema and data, while `migrate force` only changes the
+recorded version and does not run SQL.
+
+Build and run it as a container with:
+
+```bash
+docker build --build-arg SERVICE=database-service -t trustpkg-database-service .
+docker run --rm --env-file .env trustpkg-database-service
+docker run --rm --env-file .env trustpkg-database-service migrate up
+```
+
+The runtime image includes the repository migrations at `/migrations`.
+The image build workflow also builds and publishes the `database-service` image to
+`ghcr.io/trustpkg/trustpkg-api/database-service` alongside the other service images, using the
+same PR and release tag rules.
 
 ## Package search API
 

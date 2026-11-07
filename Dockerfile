@@ -13,4 +13,6 @@ RUN go run github.com/swaggo/swag/cmd/swag@v1.8.1 init -g cmd/api-service/main.g
 
 FROM gcr.io/distroless/static-debian13:nonroot
 COPY --from=build /out/service /service
+COPY --from=build /src/migrations /migrations
+ENV MIGRATIONS_URL=file:///migrations
 ENTRYPOINT ["/service"]

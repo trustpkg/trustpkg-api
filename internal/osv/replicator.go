@@ -37,8 +37,8 @@ func (replicator *Replicator) Run() error {
 	ctx := replicator.ctx
 	payload := replicator.payload
 	osvLog.Printf("OSV replication started: ecosystem=%s", payload.Ecosystem)
-	if strings.TrimSpace(payload.Ecosystem) == "" {
-		return fmt.Errorf("OSV ecosystem cannot be empty")
+	if err := replicator.validatePayload(); err != nil {
+		return err
 	}
 
 	state, err := dbGetOsvReplicationState(ctx, payload.Ecosystem)
@@ -73,6 +73,39 @@ func (replicator *Replicator) Run() error {
 	}
 	osvLog.Printf("OSV full replication completed: ecosystem=%s, last_modified_at=%v", payload.Ecosystem, lastModifiedAt)
 
+	return nil
+}
+
+func (replicator *Replicator) RunInitial() error {
+	if err := replicator.validatePayload(); err != nil {
+		return err
+	}
+
+	state, err := dbGetOsvReplicationState(replicator.ctx, replicator.payload.Ecosystem)
+	if err != nil {
+		return fmt.Errorf("get OSV replication state: %w", err)
+	}
+	if state.IsFirstSynchronised {
+		osvLog.Printf("OSV first initialization skipped: ecosystem=%s, already synchronized", replicator.payload.Ecosystem)
+		return nil
+	}
+
+	osvLog.Printf("OSV first initialization started: ecosystem=%s", replicator.payload.Ecosystem)
+	lastModifiedAt, err := replicator.runFull()
+	if err != nil {
+		return err
+	}
+	if err := dbCompleteOsvFullReplication(replicator.ctx, replicator.payload.Ecosystem, lastModifiedAt); err != nil {
+		return fmt.Errorf("complete OSV initial synchronization: %w", err)
+	}
+	osvLog.Printf("OSV first initialization completed: ecosystem=%s, last_modified_at=%v", replicator.payload.Ecosystem, lastModifiedAt)
+	return nil
+}
+
+func (replicator *Replicator) validatePayload() error {
+	if strings.TrimSpace(replicator.payload.Ecosystem) == "" {
+		return fmt.Errorf("OSV ecosystem cannot be empty")
+	}
 	return nil
 }
 
