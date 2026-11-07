@@ -178,6 +178,7 @@ func runSelectPackages(payload dbSelectPackagesPayload, packageSource string, pa
 	}
 	defer rows.Close()
 
+	// codeql[go/uncontrolled-allocation-size] limit is validated to 1-50 by the list handler.
 	documents := make([]PackageListDocument, 0, payload.limit)
 	for rows.Next() {
 		var document PackageListDocument
