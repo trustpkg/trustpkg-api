@@ -28,10 +28,22 @@ var allowedSearchHeaders = map[string]struct{}{
 	"upgrade-insecure-requests": {},
 	"user-agent":                {},
 	"cf-connecting-ip":          {},
+	"cf-connecting-ipv6":        {},
+	"cf-pseudo-ipv4":            {},
+	"cf-ipcountry":              {},
 	"cf-ray":                    {},
 	"cf-visitor":                {},
 	"cdn-loop":                  {},
+	"forwarded":                 {},
+	"true-client-ip":            {},
+	"x-client-ip":               {},
+	"x-cluster-client-ip":       {},
+	"x-forwarded-for":           {},
+	"x-forwarded-host":          {},
+	"x-forwarded-port":          {},
 	"x-forwarded-proto":         {},
+	"x-original-forwarded-for": {},
+	"x-real-ip":                 {},
 }
 
 var developmentSearchHeaders = map[string]struct{}{
