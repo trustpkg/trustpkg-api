@@ -78,6 +78,10 @@ migrate-down:
 migrate-force:
 	migrate -path migrations -database $(DB_URL) force $(version)
 
+.PHONY: database-service
+database-service:
+	go run ./cmd/database-service $(ARGS)
+
 .PHONY: backfill-package-slugs
 backfill-package-slugs: migrate-up
 	podman exec -i "$(POSTGRES_CONTAINER)" psql -v batch_size="$(BATCH_SIZE)" -v pause_seconds="$(PAUSE_SECONDS)" -U "$${POSTGRES_USER:-user}" -d "$${POSTGRES_DB:-postgres}" -f - < scripts/backfill_packages_slug.sql
@@ -105,6 +109,9 @@ help:
 	@echo "make migrate-up                 - Run database migrations up"
 	@echo "make migrate-down               - Run database migrations down"
 	@echo "make migrate-force              - Force database migration to a specific version (usage: make migrate-force version=<version_number>)"
+	@echo "make database-service            - Apply pending migrations and run first init when needed"
+	@echo "make database-service ARGS='migrate up|down|version|force <version>' - Run a migration command"
+	@echo "make database-service ARGS='first-init' - Apply migrations and initialize npm OSV data"
 	@echo "make backfill-package-slugs     - Backfill and uniquely index package slugs"
 	@echo "                                (options: BATCH_SIZE=2000 PAUSE_SECONDS=0.20)"
 	@echo "make reindex-package-slugs      - Populate slugs in the Typesense packages collection with parameters ARGS='-batch-size 128 -pause 250ms'"

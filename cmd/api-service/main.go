@@ -15,7 +15,7 @@ import (
 )
 
 // @title TrustPkg API
-// @version 1.7.2
+// @version 2.0.0
 // @description API for searching npm packages and their vulnerability data.
 // @BasePath /api
 // @schemes http https
