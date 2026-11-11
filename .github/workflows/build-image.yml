@@ -58,6 +58,7 @@ jobs:
           fi
 
           echo "name=$image_name" >> "$GITHUB_OUTPUT"
+          echo "manifest=$image_name:${image_tags[0]}" >> "$GITHUB_OUTPUT"
           {
             echo "tags<<EOF"
             printf '%s\n' "${image_tags[@]}"
@@ -67,12 +68,9 @@ jobs:
           podman build \
             --build-arg "SERVICE=$SERVICE" \
             --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
-            --tag "$image_name:${image_tags[0]}" \
+            --manifest "$image_name:${image_tags[0]}" \
+            --platform linux/amd64,linux/arm64 \
             .
-
-          for image_tag in "${image_tags[@]:1}"; do
-            podman tag "$image_name:${image_tags[0]}" "$image_name:$image_tag"
-          done
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REF_NAME: ${{ github.ref_name }}
@@ -90,9 +88,11 @@ jobs:
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_MANIFEST: ${{ steps.image.outputs.manifest }}
           IMAGE_TAGS: ${{ steps.image.outputs.tags }}
         shell: bash
         run: |
           while IFS= read -r image_tag; do
-            [[ -n "$image_tag" ]] && podman push "$IMAGE_NAME:$image_tag"
+            [[ -n "$image_tag" ]] &&
+              podman manifest push --all "$IMAGE_MANIFEST" "docker://$IMAGE_NAME:$image_tag"
           done <<< "$IMAGE_TAGS"
